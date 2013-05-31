@@ -55,7 +55,7 @@ class OtherAttrDirective {
 main() {
 
   var specInjector = new SpecInjector();
-  var inject = specInjector.inject;
+  //var inject = specInjector.inject;
 
   module(fn) {
     return () {};

@@ -109,6 +109,9 @@ class Scope {
 
   $watch(watchExp, [Function listener]) {
     var scope = this;
+
+    if (watchExp is DirectiveValue) watchExp = watchExp.value;
+
     var get = _compileToFn(watchExp);
     var watcher = new Watch(listener, initWatchVal, get, watchExp.toString());
 
