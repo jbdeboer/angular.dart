@@ -8,7 +8,10 @@ class TabComponent {
   int id = 0;
   Log log;
   LocalAttrDirective local;
-  TabComponent(Log this.log, LocalAttrDirective this.local);
+  TabComponent(Log this.log, LocalAttrDirective this.local) {
+    log('TabComponent-created');
+  }
+
   attach(Scope scope) {
     log('TabComponent-${id++}');
     local.ping();
@@ -16,10 +19,14 @@ class TabComponent {
 }
 
 class PaneComponent {
+  static String $tranclude = '.';
   TabComponent tabComponent;
   LocalAttrDirective localDirective;
   Log log;
-  PaneComponent(TabComponent this.tabComponent, LocalAttrDirective this.localDirective, Log this.log);
+  PaneComponent(BlockList list, TabComponent this.tabComponent, LocalAttrDirective this.localDirective, Log this.log) {
+    log('PaneComponent-created');
+  }
+
   attach(Scope scope) {
     log('PaneComponent-${tabComponent.id++}');
     localDirective.ping();
@@ -30,13 +37,53 @@ class LocalAttrDirective {
   static String $visibility = DirectiveVisibility.LOCAL;
   int id = 0;
   Log log;
-  LocalAttrDirective(Log this.log);
+  LocalAttrDirective(Log this.log) {
+    log('LocalAttrDirective-created');
+  }
+
   attach(Scope scope) {}
   ping() {
     log('LocalAttrDirective-${id++}');
   }
 }
 
+class EverythingAttrDirective {
+  static String $visibility = DirectiveVisibility.LOCAL;
+
+  TabComponent tab;
+  PaneComponent pane;
+  int id = 0;
+  Log log;
+  EverythingAttrDirective(PaneComponent this.pane, TabComponent this.tab, Log this.log) {
+    log('EverythingAttrDirective-created');
+    assert(pane != null);
+    assert(tab != null);
+  }
+
+  attach(Scope scope) {}
+}
+
+class SimpleTranscludeInAttachAttrDirective {
+  static String $transclude = '.';
+  static String $visibility = DirectiveVisibility.CHILDREN;
+
+  Log log;
+  BlockList blockList;
+
+  SimpleTranscludeInAttachAttrDirective(BlockList this.blockList, Log this.log);
+
+  attach(Scope scope) {
+    var block = blockList.newBlock();
+    block.insertAfter(blockList);
+    log('SimpleTransclude');
+  }
+}
+
+class IncludeTranscludeAttrDirective {
+  IncludeTranscludeAttrDirective(SimpleTranscludeInAttachAttrDirective simple, Log log) {
+    log('IncludeTransclude');
+  }
+}
 
 main() {
 
@@ -51,6 +98,9 @@ main() {
         ..register(NgRepeatAttrDirective)
         ..register(TabComponent)
         ..register(PaneComponent)
+        ..register(EverythingAttrDirective)
+        ..register(SimpleTranscludeInAttachAttrDirective)
+        ..register(IncludeTranscludeAttrDirective)
         ..register(LocalAttrDirective);
 
       $rootScope = injector.get(Scope);
@@ -505,7 +555,14 @@ main() {
       it('shoud make controllers available to sibling and child controllers', inject((Compiler $compile, Scope $rootScope, Log log) {
         var element = $('<tab local><pane local></pane><pane local></pane></tab>');
         $compile(element)(element)..attach($rootScope);
-        expect(log.result()).toEqual('TabComponent-0; LocalAttrDirective-0; PaneComponent-1; LocalAttrDirective-0; PaneComponent-2; LocalAttrDirective-0');
+        expect(log.result()).toEqual('LocalAttrDirective-created; TabComponent-created; LocalAttrDirective-created; PaneComponent-created; LocalAttrDirective-created; PaneComponent-created; ' +
+          'TabComponent-0; LocalAttrDirective-0; PaneComponent-1; LocalAttrDirective-0; PaneComponent-2; LocalAttrDirective-0');
+      }));
+
+      it('should reuse controllers for transclusions', inject((Compiler $compile, Scope $rootScope, Log log) {
+        var element = $('<div simple-transclude-in-attach include-transclude>block</div>');
+        $compile(element)(element)..attach($rootScope);
+        expect(log.result()).toEqual('IncludeTransclude; SimpleTransclude');
       }));
 
       it('should throw an exception if required directive is missing', inject((Compiler $compile, Scope $rootScope) {
