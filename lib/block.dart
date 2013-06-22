@@ -50,12 +50,13 @@ class BlockFactory {
 
   BlockFactory(ExceptionHandler this.$exceptionHandler,
                BlockListFactory this.$blockListFactory,
-               Injector this.$injector);
+               Injector this.$injector) { dump("new BlockFactory"); }
 
   call(List<dom.Node> blockNodeList, List directivePositions, List<BlockCache> blockCaches, String group, {injector: null}) {
     ASSERT(blockNodeList != null);
     ASSERT(directivePositions != null);
     ASSERT(blockCaches != null);
+    dump("new block injector: ${injector != null}");
     return new Block($exceptionHandler, $blockListFactory, injector != null ? injector : $injector,
               blockNodeList, directivePositions, blockCaches, group);
   }
@@ -160,7 +161,9 @@ class Block implements ElementWrapper {
     directiveDefsByName.values.forEach((DirectiveRef def) => elementModule.type(
                 def.directive.type, def.directive.type));
 
+    dump("for element");
     for (var i = 0, ii = directiveNames.length; i < ii; i++) {
+      dump(directiveNames[i]);
       DirectiveRef directiveRef = directiveDefsByName[directiveNames[i]];
       Type directiveType = directiveRef.directive.type;
       var visibility = local;
@@ -173,6 +176,7 @@ class Block implements ElementWrapper {
     }
 
     var injector = parentInjector.createChild([elementModule]);
+    dump("new Injector");
 
     int prevInstantiatedCount;
     List<String> alreadyInstantiated = <String>[];
@@ -198,6 +202,7 @@ class Block implements ElementWrapper {
 
         try {
           var directiveInstance = injector.instantiate(directiveType, locals);
+          dump("created $directiveType ${injector.instances}");
           alreadyInstantiated.add(directiveName);
           if (directiveRef.directive.isComponent) {
             directiveInstance = new ComponentWrapper(directiveRef, directiveInstance, node,
