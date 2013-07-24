@@ -173,6 +173,8 @@ class Scope implements Map {
   }
 
 
+
+
   $digest() {
     var value, last,
         asyncQueue = _asyncQueue,
@@ -283,20 +285,44 @@ class Scope implements Map {
 
 
   $apply([expr]) {
-    try {
-      _beginPhase('\$apply');
-      return $eval(expr);
-    } catch (e, s) {
-      _exceptionHandler(e, s);
-    } finally {
-      _clearPhase();
+    var toThrow;
+    var returnValue;
+    async.runZonedExperimental(() {
       try {
-        $root.$digest();
+        _beginPhase('\$apply');
+        returnValue = $eval(expr);
       } catch (e, s) {
         _exceptionHandler(e, s);
-        throw e;
+      } finally {
+        _clearPhase();
+        try {
+          $root.$digest();
+        } catch (e, s) {
+          _exceptionHandler(e, s);
+          throw e;
+        }
       }
+    }, onRunAsync: (fn) {
+      async.runAsync(() {
+        try {
+          fn();
+          $root.$digest();
+        } catch (e, s) {
+          // NOTE(deboer): I can't write a test to trigger this code.
+          // I assume the situation is the same as line 301.
+          _exceptionHandler(e, s);
+          throw e;
+        }
+      });
+    }, onError: (e) {
+      _exceptionHandler(e, null);
+      if (toThrow == null)
+        toThrow = e;
+    });
+    if (toThrow != null) {
+      throw toThrow;
     }
+    return returnValue;
   }
 
 
