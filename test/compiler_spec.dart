@@ -225,6 +225,7 @@ main() {
         module.directive(ParentExpressionComponent);
         module.directive(PublishMeComponent);
         module.directive(LogComponent);
+        module.directive(FunctionRunnerComponent);
       }));
 
       it('should create a simple component', async(inject(() {
@@ -341,6 +342,17 @@ main() {
         $rootScope.$apply();
         expect(logger.length).toEqual(2);
       }));
+
+      iit('should pass functions through attributes', inject((Scope scope) {
+        var count = 0;
+        scope['inc'] = () { count++; return "boo"; };
+        var element = $('<function-runner func=inc></function-runner>');
+
+        expect(count).toEqual(0);
+        $compile(element)(injector, element);
+        $rootScope.$apply();
+        expect(count).toEqual(1);
+      }));
     });
 
     describe('controller scoping', () {
@@ -423,5 +435,16 @@ class PublishMeComponent {
 class LogComponent {
   LogComponent(Scope scope, Logger logger) {
     logger.add(scope);
+  }
+}
+
+@NgComponent(
+    map: const {
+      'func': '&'
+    }
+)
+class FunctionRunnerComponent {
+  FunctionRunnerComponent(Scope scope) {
+    scope['func']()();
   }
 }
