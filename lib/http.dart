@@ -59,14 +59,23 @@ class Http {
     if (cachedValue != null) {
       return new async.Future.value(cachedValue);
     }
-    var result = backend.request(url,
+    var backendFuture = backend.request(url,
         method: method,
         withCredentials: withCredentials,
         responseType: responseType,
         mimeType: mimeType,
         requestHeaders: requestHeaders,
         sendData: sendData,
-        onProgress: onProgress).then((value) {
+        onProgress: onProgress);
+
+    // NOTE(deboer): Craziness to support runZoned.  The future that
+    // we give to others needs to be created in our zone so we can
+    // watch it.  We are wrapping the HttpRequest future in our own
+    // completer.
+    var completer = new async.Completer();
+    backendFuture.then((data) => completer.complete(data));
+
+    var result = completer.future.then((value) {
       // NOTE(deboer): Missing headers.  Ask the Dart team for a sane API.
       var response = new HttpResponse(value.status, value.responseText);
 

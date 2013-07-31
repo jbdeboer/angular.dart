@@ -1,4 +1,5 @@
 import "_specs.dart";
+import "dart:async";
 
 main() {
   describe(r'Scope', () {
@@ -482,6 +483,161 @@ main() {
         });
       });
 
+      describe(r'async', () {
+        beforeEach(module((AngularModule module) {
+          return module.type(ExceptionHandler, LogExceptionHandler);
+        }));
+
+        
+        it(r'should run watch cycle on future resolution', async(inject((Scope scope) {
+          var log = '';
+          scope['r'] = 0;
+          scope['qq'] = 0;
+          scope.$watch('q', (_) {
+            log += 'q';
+            scope['qq'] = 1;
+            new Future.value('b').then((v) {
+              log += 'b';
+              scope['r'] = 3;
+            });
+          });
+
+          scope.$watch('r', (rVal) {
+            log += 'r';
+            scope['s'] = rVal * 2;
+          });
+          scope.$apply("q=2");
+          expect(scope['qq']).toEqual(1);
+          expect(scope['q']).toEqual(2);
+          expect(scope['r']).toEqual(0);
+          expect(log).toEqual('qr');
+          nextTurn(true);
+
+          expect(scope['r']).toEqual(3);
+          expect(scope['s']).toEqual(6);
+          expect(log).toEqual('qrbr');
+        })));
+
+
+        it('should capture futures triggered in watch cycles triggered async', async(inject((Scope scope) {
+          var log = '';
+          scope['r'] = 0;
+
+          scope.$watch('r', (rVal) {
+            log += 'r$rVal';
+            if (rVal == 3) {
+
+              new Future.value('b').then((v) {
+                log += 'b';
+                scope['r'] = 5;
+              });
+            }
+            scope['s'] = rVal * 2;
+          });
+          scope.$apply(() {
+            new Future.value('a').then((v) {
+              scope['r'] = 3;
+            });
+          });
+          nextTurn(true);
+          expect(scope['s']).toEqual(10);
+          expect(log).toEqual('r0r3br5');
+        })));
+
+
+        it('should only apply once per turn', async(inject((Scope scope) {
+          var log = '';
+          scope.r = 0;
+          scope.$watch('r+s', (rsVal) {
+            log += 'rs$rsVal';
+            scope.t = rsVal;
+          });
+
+          scope.$apply(() {
+            // These two futures will resolve during the same turn.
+            new Future.value('a').then((v) {
+              scope['r'] = 3;
+            });
+            new Future.value('b').then((v) {
+              scope['s'] = 2;
+            });
+          });
+
+          nextTurn(true);
+          expect(scope.t).toEqual(5);
+          expect(log).toEqual('rs0rs5');
+        })));
+
+
+        it('should run watch cycles for runAsync code', async(inject((Scope scope) {
+          scope.$watch('a', (a) {
+            scope['b'] = 2 * a;
+          });
+          scope.$apply(() {
+            runAsync(() {
+              runAsync(() {
+                scope['a'] = 4;
+              });
+            });
+          });
+          nextTurn(true);
+          expect(scope['b']).toEqual(8);
+        })));
+
+
+        it(r'should catch exceptions from futures', async(inject((Scope scope, ExceptionHandler $exceptionHandler) {
+          scope.$watch('q', (_) {
+            scope['qq'] = 1;
+            new Future.value('b').then((v) {
+              throw "sadface";
+            });
+          });
+          scope.$apply("q=2");
+          nextTurn(true);
+          expect($exceptionHandler.errors.length).toEqual(1);
+          expect($exceptionHandler.errors[0].error).toEqual("sadface");
+        })));
+
+
+        it(r'should catch exceptions from digests trigger by futures', async(inject((Scope scope, ExceptionHandler $exceptionHandler) {
+          scope.$watch('q', (_) {
+            scope['qq'] = 1;
+            new Future.value('b').then((v) {
+              scope['x'] = 2;
+            });
+          });
+          scope.$watch('x', (xVal) {
+            if (xVal == 2) throw "x was 2";
+          });
+          scope.$apply("q=2");
+          nextTurn(true);
+          expect($exceptionHandler.errors.length).toEqual(1);
+          expect($exceptionHandler.errors[0].error).toEqual("x was 2");
+        })));
+
+
+        it(r'should throw from the synchronous code', () {
+          module((AngularModule module) {
+            return module.type(ExceptionHandler, ExceptionHandler);
+          });
+
+          async(inject((Scope scope, ExceptionHandler $exceptionHandler) {
+            scope.$watch('q', (_) {
+            scope['qq'] = 1;
+            new Future.value('b').then((v) {
+              scope['x'] = 2;
+            });
+            throw "sync throw";
+          });
+          expect(() {
+            scope.$apply("q=2");
+            nextTurn(true);
+          }).toThrow('sync throw');
+
+          }));
+        });
+      });
+
 
       describe(r'exceptions', () {
         var log;
@@ -562,6 +718,17 @@ main() {
             childScope2.x = 'something';
           }); }).toThrow(r'$digest already in progress');
         }));
+
+
+        it(r'should thrown an exception is $apply is called from a future', async(inject((Scope scope) {
+          scope.$apply(() {
+            new Future.value('a').then((v) {
+              scope.$apply();
+            });
+          });
+          nextTurn(true);
+          expect(asyncError()).toContain('asyncEval already in progress');
+        })));
       });
     });
 

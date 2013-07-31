@@ -41,7 +41,7 @@ main() {
         ..type(UrlRewriter, PrefixedUrlRewriter);
     }));
 
-    it('should use the UrlRewriter for both HTML and CSS URLs', inject((Http $http, Compiler $compile, Scope $rootScope, Log log, Injector injector) {
+    it('should use the UrlRewriter for both HTML and CSS URLs', async(inject((Http $http, Compiler $compile, Scope $rootScope, Log log, Injector injector) {
 
       backend.expectGET('PREFIX:simple.html', '<div log="SIMPLE">Simple!</div>');
 
@@ -49,13 +49,14 @@ main() {
       $compile(element)(injector, element);
 
       backend.flush();
+      nextTurn(true);
       backend.assertAllGetsCalled();
 
       expect(renderedText(element)).toEqual('@import "PREFIX:simple.css"Simple!');
       expect(element[0].nodes[0].shadowRoot.innerHtml).toEqual(
           '<style>@import "PREFIX:simple.css"</style><div log="SIMPLE">Simple!</div>'
       );
-    }));
+    })));
   });
 
 

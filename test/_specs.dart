@@ -192,6 +192,8 @@ nextTurn([bool runUntilEmpty = false]) {
   }
 }
 
+asyncError() => _asyncErrors.removeAt(0);
+
 async(Function fn) =>
   () {
     _asyncErrors = [];

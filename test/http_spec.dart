@@ -24,7 +24,7 @@ main() {
       cache = new FakeCache();
     });
 
-    it('should rewrite URLs before calling the backend', () {
+    it('should rewrite URLs before calling the backend', async(() {
       backend.expectGET('a', VALUE, times: 1);
 
       var http = new Http(rewriter, backend);
@@ -37,12 +37,13 @@ main() {
       expect(called).toEqual(0);
 
       backend.flush();
+      nextTurn(true);
 
       expect(called).toEqual(1);
       backend.assertAllGetsCalled();
-    });
+    }));
 
-    it('should support pending requests for different raw URLs', () {
+    it('should support pending requests for different raw URLs', async(() {
       backend.expectGET('a', VALUE, times: 1);
 
       var http = new Http(rewriter, backend);
@@ -58,9 +59,11 @@ main() {
 
       expect(called).toEqual(0);
       backend.flush();
+      nextTurn(true);
+
       expect(called).toEqual(11);
       backend.assertAllGetsCalled();
-    });
+    }));
 
     it('should support caching', async(() {
       var http = new Http(rewriter, backend);
@@ -86,7 +89,7 @@ main() {
       backend = new MockHttpBackend();
       cache = new FakeCache();
     });
-    it('should not cache if no cache is present', () {
+    it('should not cache if no cache is present', async(() {
       backend.expectGET('a', VALUE, times: 2);
 
       var http = new Http(rewriter, backend);
@@ -103,13 +106,14 @@ main() {
       expect(called).toEqual(0);
 
       backend.flush();
+      nextTurn(true);
 
       expect(called).toEqual(11);
       backend.assertAllGetsCalled();
-    });
+    }));
 
 
-    it('should return a pending request', inject(() {
+    it('should return a pending request', async(inject(() {
       backend.expectGET('a', VALUE, times: 1);
 
       var http = new Http(rewriter, backend);
@@ -125,12 +129,14 @@ main() {
 
       expect(called).toEqual(0);
       backend.flush();
+      nextTurn(true);
+
       expect(called).toEqual(11);
       backend.assertAllGetsCalled();
-    }));
+    })));
 
 
-    it('should not return a pending request after the request is complete', () {
+    it('should not return a pending request after the request is complete', async(() {
       backend.expectGET('a', VALUE, times: 2);
 
       var http = new Http(rewriter, backend);
@@ -142,6 +148,7 @@ main() {
 
       expect(called).toEqual(0);
       backend.flush();
+      nextTurn(true);
 
       http.getString('a', cache: cache).then((v) {
         expect(v).toBe(VALUE);
@@ -150,9 +157,10 @@ main() {
 
       expect(called).toEqual(1);
       backend.flush();
+      nextTurn(true);
       expect(called).toEqual(11);
       backend.assertAllGetsCalled();
-    });
+    }));
 
 
     it('should return a cached value if present', async(() {
