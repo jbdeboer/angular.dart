@@ -161,27 +161,44 @@ getterChild(value, childKey) {
 
   InstanceMirror instanceMirror = reflect(value);
   Symbol curSym = new Symbol(childKey);
+
+  // Dart doesn't like 'scope.null'.  We consider that to be null. Dart blows up.
+  // This is a special test for that case.
+  //if (curSym == NULL_SYMBOL) {
+  //  return [true, null];
+  //}
+
   try {
     // maybe it is a member field?
     return [true, instanceMirror.getField(curSym).reflectee];
-  } catch (e) {
-    // maybe it is a member method?
-    if (instanceMirror.type.members.containsKey(curSym)) {
-      MethodMirror methodMirror = instanceMirror.type.members[curSym];
-      return [true, _relaxFnArgs(([a0, a1, a2, a3, a4, a5]) {
-        var args = stripTrailingNulls([a0, a1, a2, a3, a4, a5]);
-        try {
-          return instanceMirror.invoke(curSym, args).reflectee;
-        } catch (e) {
-          throw "$e \n\n${e.stacktrace}";
-        }
-      })];
+  } on MirroredUncaughtExceptionError catch (e) {
+    if (e.exception_mirror.hasReflectee && e.exception_mirror.reflectee is NoSuchMethodError) {
+      // maybe it is a member method?
+      if (instanceMirror.type.members.containsKey(curSym)) {
+        MethodMirror methodMirror = instanceMirror.type.members[curSym];
+        return [true, _relaxFnArgs(([a0, a1, a2, a3, a4, a5]) {
+          var args = stripTrailingNulls([a0, a1, a2, a3, a4, a5]);
+          try {
+            return instanceMirror.invoke(curSym, args).reflectee;
+          } catch (e) {
+            throw "$e \n\n${e.stacktrace}";
+          }
+        })];
+      }
+      return [false, null];
+    } else {
+      throw "$e \n\n${e.stacktrace}";
     }
-    return [false, null];
+  } catch (e) {
+    throw;
   }
 }
 
 getter(scope, locals, path) {
+  if (scope == null) {
+    return null;
+  }
+
   List<String> pathKeys = path.split('.');
   var pathKeysLength = pathKeys.length;
 
