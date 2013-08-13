@@ -207,16 +207,51 @@ main() => describe('zone', () {
 
 
   it('should support assertInZone', () {
-      zone.onTurnDone = () {
+    zone.onTurnDone = () {
+      zone.assertInZone();
+    };
+    zone.run(() {
+      zone.assertInZone();
+      runAsync(() {
         zone.assertInZone();
-      };
-      zone.run(() {
-        zone.assertInZone();
-        runAsync(() {
-          zone.assertInZone();
-        });
       });
     });
+  });
+
+  iit('should support assertInZone with futures', async(() {
+    runZonedExperimental(() {
+      var called = '';
+      var future = new Future.value(4);
+      zone.run(() {
+        future = future.then((_) {
+          MARK('INSIDE');
+          called += 'inside;';
+          zone.assertInZone();
+          return 5;
+        });
+      });
+      future.then((_) {
+        MARK('OUTSIDE B');
+        // Notice that this runAsync is not caught by zone.dart's onRunAsync.
+        // i.e. this future is running in the outer zone only (as expected).
+        // However, assertInZone does not throw!
+        runAsync(() => MARK('OUTSIDE B RUNNING'));
+        expect(_).toEqual(5);
+        called += 'outsideB;';
+
+        expect(() => zone.assertInZone()).toThrow();
+      });
+
+      nextTurn(true);
+      expect(called).toEqual('outsideA;inside;outsideB;');
+    }, onRunAsync: (fn) {
+      runAsync(() {
+        ENTER('OUTER RUNASYNC');
+        fn();
+        LEAVE('OUTER RUNASYNC');
+      });
+    });
+  }));
 
 
     it('should throw outside of the zone', () {

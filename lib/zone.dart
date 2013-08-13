@@ -57,6 +57,7 @@ class Zone {
     onRunAsync: (delegate()) {
       _asyncCount++;
       async.runAsync(() {
+        ENTER('ZONE RUNASYNC');
         _runningInZone = true;
         try {
           interceptCall(delegate);
@@ -65,6 +66,7 @@ class Zone {
           _tryDone(true);
         } finally {
           _runningInZone = false;
+          LEAVE('ZONE RUNASYNC');
         }
       });
     }, onError:(e) {
