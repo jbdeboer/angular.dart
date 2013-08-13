@@ -57,12 +57,14 @@ class Zone {
        _asyncCount++;
       }
       async.runAsync(() {
+        ENTER('ZONE RUNASYNC');
         interceptCall(delegate);
         // This runAsync body is run in the parent zone.  If
         // we are going to run onTurnDone, we need to zone it.
         if (!calledFromAssertInZone) {
           _tryDone(true);
         }
+        LEAVE('ZONE RUNASYNC');
       });
     }, onError:(e) {
       if (e is List && e[0] == _ZONE_CHECK) return;
