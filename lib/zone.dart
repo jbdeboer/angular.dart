@@ -8,6 +8,11 @@ class Zone {
   bool _runningInTurn = false;
 
   /**
+   * A function that is called before any code we run in each VM turn.
+   */
+  Function onTurnStart = () => null;
+
+  /**
    * A function that is called at the end of each VM turn in which the
    * in-zone code or any runAsync callbacks were run.
    */
@@ -31,7 +36,7 @@ class Zone {
     if ((--_asyncCount) == 0) {
       if (runInNewZone) {
         // This run call will trigger a synchronous onTurnDone.
-        run((){});
+        _run((){});
       } else {
         onTurnDone();
       }
@@ -48,6 +53,13 @@ class Zone {
    * Returns the return value of body.
    */
   run(body()) {
+    assert(_asyncCount == 0);
+    onTurnStart();
+    _run(body);
+  }
+
+
+  _run(body()) {
     var exceptionFromZone;
     var returnValueFromZone;
     _asyncCount++;
