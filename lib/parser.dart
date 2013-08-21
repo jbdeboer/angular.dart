@@ -1,4 +1,4 @@
-part of angular;
+part of parser_library;
 
 
 typedef ParsedGetter(self, [locals]);
@@ -70,6 +70,12 @@ String SIGN_OP = "+-";
 Operator NULL_OP = (_, _x, _0, _1) => null;
 Operator NOT_IMPL_OP = (_, _x, _0, _1) { throw "Op not implemented"; };
 
+// FUNCTIONS USED AT RUNTIME.
+
+parserEvalError(String s, String text, stack) =>
+  ['Eval Error: $s while evaling [$text]' +
+      (stack != null ? '\n\nFROM:\n$stack' : '')];
+
 toBool(x) {
   if (x is bool) return x;
   if (x is int || x is double) return x != 0;
@@ -78,15 +84,56 @@ toBool(x) {
 
 // Automatic type conversion.
 autoConvertAdd(a, b) {
-  // TODO(deboer): Support others.
-  if (a is String && b is! String) {
-    return a + b.toString();
+  if (a != null && b != null) {
+    // TODO(deboer): Support others.
+    if (a is String && b is! String) {
+      return a + b.toString();
+    }
+    if (a is! String && b is String) {
+      return a.toString() + b;
+    }
+    return a + b;
   }
-  if (a is! String && b is String) {
-    return a.toString() + b;
-  }
-  return a + b;
+  if (a != null) return a;
+  if (b != null) return b;
+  return null;
 }
+
+objectIndexGetField(o, i, evalError) {
+  if (o == null) throw evalError('Accessing null object');
+
+  if (o is List) {
+    return o[i.toInt()];
+  } else if (o is Map) {
+    return o[i.toString()]; // toString dangerous?
+  }
+  throw evalError("Attempted field access on a non-list, non-map");
+}
+
+objectIndexSetField(o, i, v, evalError) {
+  if (o is List) {
+    int arrayIndex = i.toInt();
+    if (o.length <= arrayIndex) { o.length = arrayIndex + 1; }
+    o[arrayIndex] = v;
+  } else if (o is Map) {
+    o[i.toString()] = v; // toString dangerous?
+  } else {
+    throw evalError("Attempting to set a field on a non-list, non-map");
+  }
+  return v;
+}
+
+safeFunctionCall(userFn, fnName, evalError) {
+  if (userFn == null) {
+    throw evalError("Undefined function $fnName");
+  }
+  if (userFn is! Function) {
+    throw evalError("$fnName is not a function");
+  }
+  return userFn;
+}
+
+var undefined_ = new Symbol("UNDEFINED");
 
 Map<String, Operator> OPERATORS = {
   'undefined': NULL_OP,
@@ -95,10 +142,7 @@ Map<String, Operator> OPERATORS = {
   '+': (self, locals, aFn, bFn) {
     var a = aFn.eval(self, locals);
     var b = bFn.eval(self, locals);
-    if (a != null && b != null) return autoConvertAdd(a, b);
-    if (a != null) return a;
-    if (b != null) return b;
-    return null;
+    return autoConvertAdd(a, b);
   },
   '-': (self, locals, a, b) {
     assert(a != null || b != null);
@@ -135,7 +179,7 @@ stripTrailingNulls(List l) {
   return l;
 }
 
-var _undefined_ = new Symbol("UNDEFINED");
+
 
 // Returns a tuple [found, value]
 _getterChild(value, childKey) {
@@ -167,7 +211,7 @@ _getterChild(value, childKey) {
       rethrow;
     }
   }
-  return _undefined_;
+  return undefined_;
 }
 
 getter(self, locals, path) {
@@ -177,7 +221,7 @@ getter(self, locals, path) {
 
   List<String> pathKeys = path.split('.');
   var pathKeysLength = pathKeys.length;
-  var value = _undefined_;
+  var value = undefined_;
 
   if (pathKeysLength == 0) { return self; }
 
@@ -189,11 +233,11 @@ getter(self, locals, path) {
     } else {
       currentValue = _getterChild(locals, curKey);
       locals = null;
-      if (currentValue == _undefined_) {
+      if (currentValue == undefined_) {
         currentValue = _getterChild(self, curKey);
       }
     }
-    if (currentValue == null || currentValue == _undefined_) { return null; }
+    if (currentValue == null || currentValue == undefined_) { return null; }
   }
   return currentValue;
 }
@@ -222,7 +266,7 @@ setter(obj, path, setValue) {
   for (var i = 0; element.length > 1; i++) {
     var key = element.removeAt(0);
     var propertyObj = _getterChild(obj, key);
-    if (propertyObj == null || propertyObj == _undefined_) {
+    if (propertyObj == null || propertyObj == undefined_) {
       propertyObj = {};
       _setterChild(obj, key, propertyObj);
     }
@@ -267,13 +311,8 @@ class ExpressionFactory {
         for ( var i = 0; i < argsFn.length; i++) {
           args.add(argsFn[i].eval(self, locals));
         }
-        var userFn = fn.eval(self, locals);
-        if (userFn == null) {
-          throw evalError("Undefined function $fnName");
-        }
-        if (userFn is! Function) {
-          throw evalError("$fnName is not a function");
-        }
+        var userFn = safeFunctionCall(fn.eval(self, locals), fnName, evalError);
+
         return relaxFnApply(userFn, args);
       });
 
@@ -287,41 +326,18 @@ class ExpressionFactory {
       });
 
   Expression objectIndex(obj, indexFn, evalError) {
-    // TODO(deboer): Combine these into a single function.
-    getField(o, i) {
-      if (o is List) {
-        return o[i.toInt()];
-      } else if (o is Map) {
-        return o[i.toString()]; // toString dangerous?
-      }
-      throw evalError("Attempted field access on a non-list, non-map");
-    }
-
-    setField(o, i, v) {
-      if (o is List) {
-        int arrayIndex = i.toInt();
-        if (o.length <= arrayIndex) { o.length = arrayIndex + 1; }
-        o[arrayIndex] = v;
-      } else if (o is Map) {
-        o[i.toString()] = v; // toString dangerous?
-      } else {
-        throw evalError("Attempting to set a field on a non-list, non-map");
-      }
-      return v;
-    }
-
     return new Expression((self, [locals]){
       var i = indexFn.eval(self, locals);
       var o = obj.eval(self, locals),
       v, p;
 
-      if (o == null) throw evalError('Accessing null object');
 
-      v = getField(o, i);
+
+      v = objectIndexGetField(o, i, evalError);
 
       return v;
     }, (self, value, [locals]) =>
-    setField(obj.eval(self, locals), indexFn.eval(self, locals), value)
+    objectIndexSetField(obj.eval(self, locals), indexFn.eval(self, locals), value, evalError)
     );
   }
 
@@ -403,8 +419,7 @@ class Parser {
           'at column ${t.index + 1} in';
       return 'Parser Error: $s $location [$text]';
     }
-    evalError(String s, [stack]) => ['Eval Error: $s while evaling [$text]' +
-        (stack != null ? '\n\nFROM:\n$stack' : '')];
+    evalError(String s, [stack]) => parserEvalError(s, text, stack);
 
     Token peekToken() {
       if (tokens.length == 0)
