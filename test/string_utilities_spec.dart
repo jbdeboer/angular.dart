@@ -1,3 +1,5 @@
+library string_utilities_spec;
+
 import "_specs.dart";
 
 main() {

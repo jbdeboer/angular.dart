@@ -1,3 +1,5 @@
+library angular_spec;
+
 import '_specs.dart';
 import 'package:angular/relax_fn_apply.dart';
 

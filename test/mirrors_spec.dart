@@ -1,3 +1,5 @@
+library mirrors_spec;
+
 import "_specs.dart";
 
 class NoStatic { }

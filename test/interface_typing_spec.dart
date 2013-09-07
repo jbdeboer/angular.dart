@@ -1,3 +1,5 @@
+library interface_typing_spec;
+
 import '_specs.dart';
 import "dart:mirrors";
 
