@@ -34,6 +34,7 @@ node "$KARMA_PATH" start karma.conf \
   --reporters=junit,dots --port=8765 --runner-port=8766 \
   --browsers=ChromeCanary --single-run --no-colors --no-color
 
+
 node "$KARMA_PATH" start karma-perf.conf.js \
   --reporters=junit,dots --port=8765 --runner-port=8766 \
   --browsers=ChromeCanary --single-run --no-colors --no-color
