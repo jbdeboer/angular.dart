@@ -13,6 +13,7 @@ import 'ng_include.dart';
 import 'ng_model.dart';
 import 'ng_repeat.dart';
 import 'ng_show.dart';
+import 'ng_style.dart';
 
 export "ng_mustache.dart";
 export 'ng_bind.dart';
@@ -27,4 +28,6 @@ export 'ng_include.dart';
 export 'ng_model.dart';
 export 'ng_repeat.dart';
 export 'ng_show.dart';
+export 'ng_style.dart';
+
 
