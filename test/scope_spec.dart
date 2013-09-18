@@ -325,6 +325,14 @@ main() {
         $rootScope.$digest();
         expect(log).toEqual([]);
       }));
+
+      iit(r'should digest a watched object from the parser', inject((Scope scope, Parser parser) {
+        var expr = parser('{"a": 5}');
+        var watchResult;
+        scope.$watch(() => expr.eval(scope), (v) => watchResult = v);
+        scope.$digest();
+        expect(watchResult).toEqual({"a": 5});
+      }));
     });
 
 
