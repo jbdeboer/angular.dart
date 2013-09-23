@@ -18,18 +18,18 @@ import '../scope.dart';
  */
 @NgDirective(
     selector: '[ng-blur]',
-    map: const {'ng-blur': '&.onBlur'}
+    map: const {'ng-blur': '&.onBlurFn'}
 )
 class NgBlurAttrDirective {
   /**
    * Parsed expression from the `ng-blur` attribute.  On a `Blur`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
-  Getter onBlur;
+  Getter onBlurFn;
 
   NgBlurAttrDirective(dom.Element element, Scope scope) {
     element.onBlur.listen((event) => scope.$apply(() {
-      onBlur({r"$event": event});
+      onBlurFn.call({r"$event": event});
     }));
   }
 }

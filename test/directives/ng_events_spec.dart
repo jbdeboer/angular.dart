@@ -14,7 +14,7 @@ void addTest(String name, [String eventType='MouseEvent', String eventName]) {
 
     beforeEach(beforeEachTestBed((tb) => _ = tb));
 
-    it('should evaluate the expression on $name', inject(() {
+    iit('should evaluate the expression on $name', inject(() {
       _.compile('<button ng-$name="abc = true; event = \$event"></button>');
       _.triggerEvent(_.rootElement, eventName, eventType);
       expect(_.rootScope['abc']).toEqual(true);
@@ -25,6 +25,7 @@ void addTest(String name, [String eventType='MouseEvent', String eventName]) {
 
 main() {
     addTest('blur');
+    return;
     addTest('change');
     addTest('click');
     addTest('contextmenu');
