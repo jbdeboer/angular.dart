@@ -1,5 +1,7 @@
 library templateurl_spec;
 
+import 'dart:mirrors';
+
 import '_specs.dart';
 import '_http.dart';
 
@@ -82,6 +84,20 @@ main() {
     afterEach(inject((MockHttp $http) {
       $http.assertAllGetsCalled();
     }));
+
+
+    iit('should set message on log', inject(() {
+      var logAttr = new LogAttrDirective(null);
+      reflect(logAttr).setField(new Symbol("mssage"), "james");
+      expect(logAttr.mssage).toEqual("james");
+    }));
+
+    iit('should set message on log', inject(() {
+      var logAttr = new LogAttrDirective(null);
+      reflect(logAttr).setField(new Symbol("message"), "james");
+      expect(logAttr.message).toEqual("james");
+    }));
+
 
     it('should replace element with template from url', async(inject((MockHttp $http, Compiler $compile, Scope $rootScope,  Logger log, Injector injector) {
       $http.expectGET('simple.html', '<div log="SIMPLE">Simple!</div>');
