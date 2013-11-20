@@ -1,6 +1,25 @@
 Angular.dart's Todo Demo
 ========================
 
+Now with Tracing
+----------------
+
+See 
+[the wtf github](https://github.com/google/tracing-framework/blob/master/docs/call_tracing.md) docs
+
+quick start:
+
+```
+npm install -g tracing-framework
+chrome --remote-debugging-port=9222 --disable-web-security
+--js-flags=--allow-natives-syntax
+./gen.sh
+node webserver.js
+```
+
+Then navigate to http://localhost:3000
+
+
 This demo is the most complete demo in the repository and a great
 starting point for quickly understanding Angular.dart
 
