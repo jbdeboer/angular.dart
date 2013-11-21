@@ -1,6 +1,7 @@
 library todo;
 
 import 'package:angular/angular.dart';
+import 'package:js/js.dart' as js;
 
 class Item {
   String text;
@@ -49,7 +50,7 @@ class TodoController {
   List<Item> items;
   Item newItem;
 
-  TodoController(ServerController serverController) {
+  TodoController(ServerController serverController, NgZone zone, Scope scope) {
     newItem = new Item();
     items = [
       new Item('Write Angular in Dart', true),
@@ -58,6 +59,20 @@ class TodoController {
     ];
 
     serverController.init(this);
+
+    var oldOnTurnDone = zone.onTurnDone;
+    var run = 0;
+    zone.onTurnDone = () {
+      oldOnTurnDone();
+      print("running scope again");
+      js.context.console.log("a"); //__resetTrace(); //wtf.trace.reset();
+      scope.$digest();
+      js.context.console.log("b"); //__showTrace(); //wtf.trace.stop();
+      //js.context.wtf.trace.snapshot('file://tmp/todo-$run');
+      print("done running scope again");
+    };
+
+
   }
 
   // workaround for https://github.com/angular/angular.dart/issues/37
