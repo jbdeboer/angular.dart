@@ -65,10 +65,9 @@ class TodoController {
     zone.onTurnDone = () {
       oldOnTurnDone();
       print("running scope again");
-      js.context.console.log("a"); //__resetTrace(); //wtf.trace.reset();
+      js.context.__resetTrace();
       scope.$digest();
-      js.context.console.log("b"); //__showTrace(); //wtf.trace.stop();
-      //js.context.wtf.trace.snapshot('file://tmp/todo-$run');
+      js.context.__showTrace();
       print("done running scope again");
     };
 

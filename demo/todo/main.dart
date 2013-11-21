@@ -2,12 +2,14 @@ import 'package:di/di.dart';
 import 'package:angular/angular.dart';
 import 'package:angular/playback/playback_http.dart';
 import 'todo.dart';
+import 'package:js/js.dart' as js;
 
 import 'dart:html';
 
 main() {
 
   print(window.location.search);
+  js.context.console.log('hello');
   var module = new Module()
     ..type(TodoController)
     ..type(PlaybackHttpBackendConfig);
