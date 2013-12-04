@@ -14,9 +14,9 @@ function endsWith(haystack, needle) {
 }
 
 var app = connect()
-    .use(dart2jsaasEnpoints.dart2js)
-    .use(dart2jsaasEnpoints.snapshot)
-    .use(playback.endpoint())
+ //   .use(dart2jsaasEnpoints.dart2js)
+ //   .use(dart2jsaasEnpoints.snapshot)
+ //   .use(playback.endpoint())
   // Serve the /todos for the app.
     .use(function(req, res, next) {
       if (req.url.indexOf('/todos') != 0) {

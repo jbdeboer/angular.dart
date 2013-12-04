@@ -1,0 +1,29 @@
+<html>
+<head>
+    <style>
+        #undertest {
+            width: 450px;
+            height: 400px;
+        }
+    </style>
+</head>
+<body>
+<iframe id="undertest" src="index.html"></iframe>
+<script>
+    var scope;
+    window.onload = function() {
+        console.log('loaded');
+  var ctrlElt = undertest.ngQuery(undertest.document, '[todo-controller]')[0];
+  scope = undertest.ngScope(ctrlElt);
+
+        window.setTimeout(function() {
+            // Do some stuff.
+            undertest.__resetTrace();
+            scope.$apply('todo.newItem.text="Automatic auto"; todo.add()');
+            undertest.__showTrace();
+        }, 500);
+
+    }
+</script>
+</body>
+</html>
