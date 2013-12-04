@@ -1,5 +1,6 @@
 <html>
 <head>
+    <script src="benchmark.js"></script>
     <style>
         #undertest {
             width: 450px;
@@ -18,12 +19,55 @@
 
         window.setTimeout(function() {
             // Do some stuff.
-            undertest.__resetTrace();
-            scope.$apply('todo.newItem.text="Automatic auto"; todo.add()');
-            undertest.__showTrace();
+
+            var suite = new Benchmark.Suite;
+            var i = 0;
+
+            //undertest.__resetTrace();
+
+            // add tests
+            suite
+                    .add('No-op digest before todos', function() {
+                        scope.$digest();
+                    })
+                    .add('Add a todo', function() {
+                scope.$apply('todo.newItem.text="Automatic auto ' + i++ + '"; todo.add()');
+
+            })
+                    .add('No-op digest after todos', function() {
+                        scope.$digest();
+                    })
+
+            // add listeners
+            .on('cycle', function(event) {
+              console.log(String(event.target));
+                       // undertest.__showTrace();
+            })
+
+// run async
+.run({ 'async': true });
+
+           // undertest.__resetTrace();
+           // scope.$apply('todo.newItem.text="Automatic auto"; todo.add()');
+           // undertest.__showTrace();
         }, 500);
 
     }
+
+    /**
+
+     At HEAD (5b3d5e2f2040c)
+
+      No-op digest before todos x 4,406 ops/sec ±13.31% (92 runs sampled) debug.html:43
+Add a todo x 60.12 ops/sec ±13.65% (35 runs sampled) debug.html:43
+No-op digest after todos x 119 ops/sec ±0.48% (75 runs sampled)
+
+     Before the optimizations
+
+     
+     */
 </script>
 </body>
 </html>
+
+
