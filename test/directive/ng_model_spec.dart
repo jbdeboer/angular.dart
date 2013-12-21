@@ -30,7 +30,7 @@ describe('ng-model', () {
       expect((_.rootElement as dom.InputElement).value).toEqual('');
     }));
 
-    it('should update model from the input value', inject(() {
+    iit('should update model from the input value', inject(() {
       _.compile('<input type="text" ng-model="model" probe="p">');
       Probe probe = _.rootScope.p;
       var ngModel = probe.directive(NgModel);
@@ -38,6 +38,7 @@ describe('ng-model', () {
 
       inputElement.value = 'abc';
       _.triggerEvent(inputElement, 'change');
+      print('as op: ${_.rootScope['model']}');
       expect(_.rootScope.model).toEqual('abc');
 
       inputElement.value = 'def';

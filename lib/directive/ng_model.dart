@@ -44,6 +44,7 @@ class NgModel {
   }
 
   set model(BoundExpression boundExpression) {
+    print('setting model');
     getter = boundExpression;
     setter = boundExpression.assign;
   }
@@ -113,6 +114,7 @@ abstract class _InputTextlikeDirective {
 
   processValue() {
     var value = typedValue;
+    print('ngmodel processvalue $value (was ${ngModel.viewValue})');
     if (value != ngModel.viewValue) {
       scope.$apply(() => ngModel.viewValue = value);
     }

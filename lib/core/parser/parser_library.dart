@@ -4,6 +4,7 @@ import 'dart:mirrors';
 
 import 'package:angular/utils.dart';
 import 'package:angular/core/module.dart';
+import 'package:quiver/mirrors.dart' as quiver;
 
 
 part 'backend.dart';

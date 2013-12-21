@@ -53,26 +53,17 @@ class GetterSetter {
     return l;
   }
 
-  static  _computeUseInstanceMembers() {
-    try {
-      reflect(Object).type.instanceMembers;
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
-   final bool _useInstanceMembers = _computeUseInstanceMembers();
-
-  _containsKey(InstanceMirror instanceMirror, Symbol symbol) {
-    dynamic type = (instanceMirror.type as dynamic);
-    var members = _useInstanceMembers ? type.instanceMembers : type.members;
-    return members.containsKey(symbol);
-  }
-
   _maybeInvoke(instanceMirror, symbol) {
-    if (_containsKey(instanceMirror, symbol)) {
-      MethodMirror methodMirror = instanceMirror.type.members[symbol];
+    print('maybeInvoke: ${symbol}');
+    var classMirror;
+    try {
+      classMirror = instanceMirror.type;
+    } catch (e) {
+      print('aaaaaa: $e');
+      return null;
+    }
+    if (quiver.getDeclaration(classMirror, symbol) != null) {
+      print('got a decl for $symbol: ');
       return relaxFnArgs(([a0, a1, a2, a3, a4, a5]) {
         var args = stripTrailingNulls([a0, a1, a2, a3, a4, a5]);
         return instanceMirror.invoke(symbol, args).reflectee;
@@ -168,6 +159,7 @@ class ParserBackend {
   }
 
   setter(String path) {
+    print('setter: $path');
     List<String> keys = path.split('.');
     List<Function> getters = keys.map(_getterSetter.getter).toList();
     List<Function> setters = keys.map(_getterSetter.setter).toList();
@@ -189,6 +181,7 @@ class ParserBackend {
         if (selfNext == null) {
           selfNext = {};
           if (self is Map) {
+            print('setting map ${_keys[i]} to $selfNext');
             self[_keys[i]] = selfNext;
           } else {
             _setters[i](self, selfNext);
@@ -197,8 +190,10 @@ class ParserBackend {
         self = selfNext;
       }
       if (self is Map) {
+        print('setting map value ${_keys[setterLengthMinusOne]} to $value');
         self[_keys[setterLengthMinusOne]] = value;
       } else {
+        print('setting not a map $value');
         _setters[i](self, value);
       }
       return value;
