@@ -10,6 +10,8 @@ main() {
   print(window.location.search);
   var module = new Module()
     ..type(TodoController)
+    ..type(NgPseudo)
+    ..type(TypeComponent)
     ..type(PlaybackHttpBackendConfig);
 
   // If these is a query in the URL, use the server-backed

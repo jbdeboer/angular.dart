@@ -24,7 +24,7 @@
     <ul class="well unstyled">
         <li ng-repeat="item in todo.items" ng-class="todo.classFor(item)">
             <label class="checkbox">
-                <input type="checkbox" ng-model="item.done"> {{item.text}}
+                <input type="checkbox" ng-model="item.done"> {{item.text}} <todo-type symbol="?"></todo-type>
             </label>
         </li>
     </ul>

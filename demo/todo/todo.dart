@@ -1,6 +1,7 @@
 library todo;
 
 import 'package:angular/angular.dart';
+import 'dart:html' as dom;
 
 class Item {
   String text;
@@ -89,5 +90,41 @@ class TodoController {
 
   int remaining() {
     return items.where((item) => !item.done).length;
+  }
+}
+
+@NgDirective(
+  selector: '[ng-pseudo]',
+  map: const { 'ng-pseudo': '@name' }
+)
+class NgPseudo {
+  dom.Element _elt;
+  set name(n) {
+    _elt.pseudo = n;
+  }
+
+  NgPseudo(dom.Element this._elt);
+}
+
+
+@NgComponent(
+  selector: 'todo-type',
+  map: const {
+    'symbol': '@symbol'
+  },
+  template: """<span style=\'border:1px solid black; padding: 0.1em\'>
+      [<span ng-bind="ctrl.symbol" ng-pseudo="x-text" ng-click="ctrl.rotSymbol()"></span>]
+    </span>""",
+  publishAs: 'ctrl'
+)
+class TypeComponent {
+  String symbol;
+  rotSymbol() {
+    switch (symbol) {
+      case '?': return symbol = '!';
+      case '!': return symbol = '#';
+      case '#': return symbol = '*';
+      case '*': return symbol = '?';
+    }
   }
 }

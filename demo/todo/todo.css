@@ -47,3 +47,7 @@ p {
   padding-top: 10px;
   padding-bottom: 10px;
 }
+
+li:hover todo-type::x-text {
+    font-weight: bold;
+}
