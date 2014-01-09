@@ -2,6 +2,8 @@ library templateurl_spec;
 
 import '../_specs.dart';
 
+import 'dart:mirrors';
+
 @NgComponent(
     selector: 'simple-url',
     templateUrl: 'simple.html')
@@ -99,6 +101,12 @@ main() => describe('template url', () {
       // Note: There is no ordering.  It is who ever comes off the wire first!
       expect(log.result()).toEqual('LOG; SIMPLE');
     })));
+
+    iit('should set message on log', inject(() {
+      var logAttr = new LogAttrDirective(null);
+      reflect(logAttr).setField(new Symbol("message"), "james");
+      expect(logAttr.message).toEqual("james");
+    }));
 
     it('should load template from URL once', async(inject((Http $http,
           Compiler $compile, Scope $rootScope,  Logger log, Injector injector,
