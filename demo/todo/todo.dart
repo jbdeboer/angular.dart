@@ -9,13 +9,6 @@ class Item {
   Item([String this.text = '', bool this.done = false]);
 
   bool get isEmpty => text.isEmpty;
-
-  clone() => new Item(text, done);
-
-  clear() {
-    text = '';
-    done = false;
-  }
 }
 
 // In 'server mode', this class fetches items from the server.
@@ -53,26 +46,18 @@ class TodoController {
     newItem = new Item();
     items = [
       new Item('Write Angular in Dart', true),
-      new Item('Write Dart in Angular'),
-      new Item('Do something useful')
+      new Item('Build powerful web apps'),
+      new Item('Push the web forward')
     ];
 
     serverController.init(this);
   }
 
-  // workaround for https://github.com/angular/angular.dart/issues/37
-  dynamic operator [](String key) {
-    if (key == 'newItem') {
-      return newItem;
-    }
-    return null;
-  }
-
   add() {
     if (newItem.isEmpty) return;
 
-    items.add(newItem.clone());
-    newItem.clear();
+    items.add(newItem);
+    newItem = new Item();
   }
 
   markAllDone() {
