@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -evx
 
 case $( uname -s ) in
   Linux)
@@ -32,5 +32,7 @@ mv dartium-* dartium
 
 echo =============================================================================
 . ./scripts/env.sh
+echo $DART
+ls -ltr $DART
 $DART --version
 $PUB install
