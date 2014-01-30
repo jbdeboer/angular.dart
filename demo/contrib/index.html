@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html ng-app>
+<head>
+  <style>
+    img {
+      height: 75px;
+      width: 75px;
+    }
+  </style>
+  <title></title>
+  <script src="main.dart" type="application/dart"></script>
+  <script src="packages/browser/dart.js"></script>
+  <script src="packages/browser/interop.js"></script>
+</head>
+<body contrib>
+<div ng-repeat="row in ctrl.rows" class="row">
+  <span ng-repeat="img in row" class="col">
+    <img ng-src="{{img}}">
+  </span>
+</div>
+</body>
+</html>
