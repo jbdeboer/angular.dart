@@ -14,5 +14,7 @@ class ElementBinder {
    */
   int directivePos = 0;
 
+  List<DirectiveRef> templateDirectives;
+
   ElementBinder(this.directives);
 }
