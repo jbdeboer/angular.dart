@@ -76,6 +76,22 @@ class _SelectorPart {
       : element;
 }
 
+_addRefToBinder(ElementBinder binder, DirectiveRef ref) {
+  var children = ref.annotation.children;
+
+  if (ref.annotation.children == NgAnnotation.TRANSCLUDE_CHILDREN) {
+    binder.templateDirective = ref;
+  } else {
+    binder.directives.add(ref);
+  }
+}
+
+_addRefs(ElementBinder binder, List<_Directive> directives, dom.Node node, [String attrValue]) {
+  directives.forEach((directive) {
+    var ref = new DirectiveRef(node, directive.type, directive.annotation, attrValue);
+    _addRefToBinder(binder, ref);
+  });
+}
 
 class _ElementSelector {
   final String name;
@@ -133,18 +149,13 @@ class _ElementSelector {
     }
   }
 
-  _addRefs(List<DirectiveRef> refs, List<_Directive> directives, dom.Node node,
-      [String attrValue]) {
-    directives.forEach((directive) =>
-      refs.add(new DirectiveRef(node, directive.type, directive.annotation,
-          attrValue)));
-  }
 
-  List<_ElementSelector> selectNode(List<DirectiveRef> refs,
+
+  List<_ElementSelector> selectNode(ElementBinder binder,
                                     List<_ElementSelector> partialSelection,
                                     dom.Node node, String nodeName) {
     if (elementMap.containsKey(nodeName)) {
-      _addRefs(refs, elementMap[nodeName], node);
+      _addRefs(binder, elementMap[nodeName], node);
     }
     if (elementPartialMap.containsKey(nodeName)) {
       if (partialSelection == null) {
@@ -155,11 +166,11 @@ class _ElementSelector {
     return partialSelection;
   }
 
-  List<_ElementSelector> selectClass(List<DirectiveRef> refs,
+  List<_ElementSelector> selectClass(ElementBinder binder,
                                      List<_ElementSelector> partialSelection,
                                      dom.Node node, String className) {
     if (classMap.containsKey(className)) {
-      _addRefs(refs, classMap[className], node);
+      _addRefs(binder, classMap[className], node);
     }
     if (classPartialMap.containsKey(className)) {
       if (partialSelection == null) {
@@ -170,7 +181,7 @@ class _ElementSelector {
     return partialSelection;
   }
 
-  List<_ElementSelector> selectAttr(List<DirectiveRef> refs,
+  List<_ElementSelector> selectAttr(ElementBinder binder,
                                     List<_ElementSelector> partialSelection,
                                     dom.Node node, String attrName,
                                     String attrValue) {
@@ -180,10 +191,10 @@ class _ElementSelector {
     if (matchingKey != null) {
       Map<String, List<_Directive>> valuesMap = attrValueMap[matchingKey];
       if (valuesMap.containsKey('')) {
-        _addRefs(refs, valuesMap[''], node, attrValue);
+        _addRefs(binder, valuesMap[''], node, attrValue);
       }
       if (attrValue != '' && valuesMap.containsKey(attrValue)) {
-        _addRefs(refs, valuesMap[attrValue], node, attrValue);
+        _addRefs(binder, valuesMap[attrValue], node, attrValue);
       }
     }
     if (attrValuePartialMap.containsKey(attrName)) {
@@ -267,7 +278,8 @@ DirectiveSelector directiveSelectorFactory(DirectiveMap directives) {
   });
 
   return (dom.Node node) {
-    var directiveRefs = <DirectiveRef>[];
+    //var directiveRefs = <DirectiveRef>[];
+    ElementBinder binder = new ElementBinder();
     List<_ElementSelector> partialSelection;
     var classes = <String, bool>{};
     var attrs = <String, String>{};
@@ -284,14 +296,14 @@ DirectiveSelector directiveSelectorFactory(DirectiveMap directives) {
         }
 
         // Select node
-        partialSelection = elementSelector.selectNode(directiveRefs,
+        partialSelection = elementSelector.selectNode(binder,
             partialSelection, element, nodeName);
 
         // Select .name
         if ((element.classes) != null) {
           for (var name in element.classes) {
             classes[name] = true;
-            partialSelection = elementSelector.selectClass(directiveRefs,
+            partialSelection = elementSelector.selectClass(binder,
                 partialSelection, element, name);
           }
         }
@@ -306,13 +318,13 @@ DirectiveSelector directiveSelectorFactory(DirectiveMap directives) {
               // we need to pass the name to the directive by prefixing it to
               // the value. Yes it is a bit of a hack.
               directives[selectorRegExp.annotation].forEach((type) {
-                directiveRefs.add(new DirectiveRef(
+                _addRefToBinder(binder, new DirectiveRef(
                     node, type, selectorRegExp.annotation, '$attrName=$value'));
               });
             }
           }
 
-          partialSelection = elementSelector.selectAttr(directiveRefs,
+          partialSelection = elementSelector.selectAttr(binder,
               partialSelection, node, attrName, value);
         });
 
@@ -321,11 +333,11 @@ DirectiveSelector directiveSelectorFactory(DirectiveMap directives) {
           partialSelection = null;
           elementSelectors.forEach((_ElementSelector elementSelector) {
             classes.forEach((className, _) {
-              partialSelection = elementSelector.selectClass(directiveRefs,
+              partialSelection = elementSelector.selectClass(binder,
                   partialSelection, node, className);
             });
             attrs.forEach((attrName, value) {
-              partialSelection = elementSelector.selectAttr(directiveRefs,
+              partialSelection = elementSelector.selectAttr(binder,
                   partialSelection, node, attrName, value);
             });
           });
@@ -338,7 +350,7 @@ DirectiveSelector directiveSelectorFactory(DirectiveMap directives) {
 
           if (selectorRegExp.regexp.hasMatch(value)) {
             directives[selectorRegExp.annotation].forEach((type) {
-              directiveRefs.add(new DirectiveRef(node, type,
+              _addRefToBinder(binder, new DirectiveRef(node, type,
                   selectorRegExp.annotation, value));
             });
           }
@@ -346,9 +358,10 @@ DirectiveSelector directiveSelectorFactory(DirectiveMap directives) {
         break;
       }
 
-      directiveRefs.sort(_priorityComparator);
+      // TODO: Can remove once we have components in the ElementBinder
+      binder.directives.sort(_priorityComparator);
 
-      return new ElementBinder(directiveRefs);
+      return binder;
     };
 }
 
