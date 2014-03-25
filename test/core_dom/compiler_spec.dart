@@ -473,8 +473,10 @@ void main() {
       describe('lifecycle', () {
         beforeEachModule((Module module) {
           var httpBackend = new MockHttpBackend();
-
           module
+            ..type(LogSetAttrDirective)
+            ..type(LogSetOuter)
+            ..type(LogAttach)
             ..value(HttpBackend, httpBackend)
             ..value(MockHttpBackend, httpBackend);
         });
@@ -532,6 +534,20 @@ void main() {
           _.compile('<log-element></log-element>');
           Element element = _.rootElement;
           expect(log).toEqual([element, element, element.shadowRoot]);
+        }));
+
+        it('should set the attributes in the correct order for directives', async((Logger log, TestBed _) {
+          _.compile('<div log-set="outer"><div log-set="inner"></div></div>');
+          _.rootScope.apply();
+          expect(log).toEqual(['outer', 'inner']);
+        }));
+
+        iit('should set the attributes in the correct order for components', async((Logger log, TestBed _) {
+          _.compile('<log-set-outer log-set-c="outer"></log-set-outer>');
+          _.rootScope.apply();
+          microLeap();
+          _.rootScope.apply();
+          expect(log).toEqual(['outer', 'attach']);
         }));
       });
 
@@ -964,4 +980,37 @@ class LogElementComponent{
     logger(node);
     logger(shadowRoot);
   }
+}
+
+/**
+ * A varitation on [LogAttrDirective] which sets the log
+ * message as soon as the setter is called.
+ */
+@NgDirective(selector: '[log-set]')
+class LogSetAttrDirective {
+  final Logger log;
+  LogSetAttrDirective(this.log);
+  @NgAttr('log-set')
+  set logMessage(value) { log(value); }
+}
+
+@NgComponent(
+    selector: 'log-attach',
+    template: '<span></span>'
+)
+class LogAttach implements NgAttachAware {
+  final Logger log;
+  LogAttach(this.log);
+  attach() {
+    log("attach");
+  }
+}
+@NgComponent(
+    selector: 'log-set-outer',
+    template: '<log-attach></log-attach>')
+class LogSetOuter {
+  final Logger log;
+  LogSetOuter(this.log);
+  @NgAttr('log-set-c')
+  set logMessage(value) { log(value); }
 }
