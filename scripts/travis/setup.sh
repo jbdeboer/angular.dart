@@ -38,7 +38,8 @@ $DART --version
 $PUB install
 
 echo Increased dart2js\' heap size
-sed -i `which dart2js` -e 's/2048/4096/'
-echo ============== DART2JS
-cat `which dart2js`
-echo DART2JS ==============
+#sed -i `which dart2js` -e 's/--heap_growth_rate=512/--heap_growth_rate=512 --old_gen_heap_size='
+#sed -i `which dart2js` -e 's/
+#echo ============== DART2JS
+#cat `which dart2js`
+#echo DART2JS ==============
