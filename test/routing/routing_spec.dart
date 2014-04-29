@@ -305,7 +305,7 @@ main() {
           'foo': ngRoute(
               path: '/foo',
               modules: () => [
-                new Module()..type(HelloFilter)
+                new Module()..type(HelloFormatter)
               ],
               view: 'foo.html'
           ),
@@ -331,7 +331,7 @@ main() {
           'foo': ngRoute(
               path: '/foo',
               modules: () => new Future.value([
-                new Module()..type(HelloFilter)
+                new Module()..type(HelloFormatter)
               ]),
               view: 'foo.html'
           ),
@@ -369,7 +369,7 @@ class NewDirective {
 }
 
 @Formatter(name:'hello')
-class HelloFilter {
+class HelloFormatter {
   call(String str) {
     return 'Hello, $str!';
   }
