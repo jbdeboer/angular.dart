@@ -39,3 +39,6 @@ $PUB install
 
 echo Increased dart2js\' heap size
 sed -i `which dart2js` -e 's/2048/4096/'
+echo ============== DART2JS
+cat `which dart2js`
+echo DART2JS ==============
