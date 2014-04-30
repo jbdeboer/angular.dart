@@ -6,8 +6,8 @@ main() {
   describe('ng-mustache', () {
     TestBed _;
     beforeEachModule((Module module) {
-      module.type(_HelloFilter);
-      module.type(_FooDirective);
+      module.bind(_HelloFilter);
+      module.bind(_FooDirective);
     });
     beforeEach(inject((TestBed tb) => _ = tb));
 

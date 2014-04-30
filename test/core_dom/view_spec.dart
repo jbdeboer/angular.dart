@@ -195,11 +195,11 @@ main() {
 
       it('should load directives/formatters from the child injector', () {
         Module rootModule = new Module()
-          ..type(Probe)
-          ..type(Log)
-          ..type(AFilter)
-          ..type(ADirective)
-          ..factory(Node, (injector) => document.body);
+          ..bind(Probe)
+          ..bind(Log)
+          ..bind(AFilter)
+          ..bind(ADirective)
+          ..bind(Node, toFactory: (injector) => document.body);
 
         Injector rootInjector = applicationFactory()
             .addModule(rootModule)
@@ -216,8 +216,8 @@ main() {
 
 
         Module childModule = new Module()
-          ..type(BFilter)
-          ..type(BDirective);
+          ..bind(BFilter)
+          ..bind(BDirective);
 
         var childInjector = forceNewDirectivesAndFilters(rootInjector, [childModule]);
 

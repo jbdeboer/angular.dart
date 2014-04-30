@@ -52,8 +52,8 @@ main() {
     FormatterMap formatters;
 
     beforeEachModule((Module module) {
-      module.type(IncrementFilter);
-      module.type(SubstringFilter);
+      module.bind(IncrementFilter);
+      module.bind(SubstringFilter);
     });
 
     beforeEach((Parser injectedParser, FormatterMap injectedFilters) {
@@ -1145,7 +1145,7 @@ main() {
         }).toThrow('No Formatter: hello found!');
 
         var module = new Module()
-            ..type(HelloFilter);
+            ..bind(HelloFilter);
         var childInjector = injector.createChild([module],
             forceNewInstances: [FormatterMap]);
         var newFilters = childInjector.get(FormatterMap);

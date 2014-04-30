@@ -11,17 +11,17 @@ void main() {
     beforeEachModule((Module module) {
       Map context = {};
       module
-          ..type(ChangeDetector, implementedBy: DirtyCheckingChangeDetector)
-          ..value(Object, context)
-          ..value(Map, context)
-          ..type(RootScope)
-          ..type(_MultiplyFilter)
-          ..type(_ListHeadFilter)
-          ..type(_ListTailFilter)
-          ..type(_SortFilter)
-          ..type(_IdentityFilter)
-          ..type(_MapKeys)
-          ..type(ScopeStatsEmitter, implementedBy: MockScopeStatsEmitter);
+          ..bind(ChangeDetector, toImplementation: DirtyCheckingChangeDetector)
+          ..bind(Object, toValue: context)
+          ..bind(Map, toValue: context)
+          ..bind(RootScope)
+          ..bind(_MultiplyFilter)
+          ..bind(_ListHeadFilter)
+          ..bind(_ListTailFilter)
+          ..bind(_SortFilter)
+          ..bind(_IdentityFilter)
+          ..bind(_MapKeys)
+          ..bind(ScopeStatsEmitter, toImplementation: MockScopeStatsEmitter);
     });
 
     describe('AST Bridge', () {
@@ -488,7 +488,7 @@ void main() {
 
         describe('exceptions', () {
           beforeEachModule((Module module) {
-            module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
+            module.bind(ExceptionHandler, toImplementation: LoggingExceptionHandler);
           });
 
 
@@ -822,7 +822,7 @@ void main() {
       describe(r'exceptions', () {
         var log;
         beforeEachModule((Module module) {
-          return module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
+          return module.bind(ExceptionHandler, toImplementation: LoggingExceptionHandler);
         });
 
         beforeEach((RootScope rootScope) {
@@ -901,7 +901,7 @@ void main() {
       describe(r'exceptions', () {
         var log;
         beforeEachModule((Module module) {
-          return module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
+          return module.bind(ExceptionHandler, toImplementation: LoggingExceptionHandler);
         });
         beforeEach((RootScope rootScope) {
           rootScope.context['log'] = () { log += 'digest;'; return null; };
@@ -1050,7 +1050,7 @@ void main() {
 
       describe('exceptions', () {
         beforeEachModule((Module module) {
-          module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
+          module.bind(ExceptionHandler, toImplementation: LoggingExceptionHandler);
         });
         it(r'should delegate exceptions', (RootScope rootScope, ExceptionHandler e) {
           LoggingExceptionHandler exceptionHandler = e;
@@ -1433,7 +1433,7 @@ void main() {
 
     describe('domRead/domWrite', () {
       beforeEachModule((Module module) {
-        module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
+        module.bind(ExceptionHandler, toImplementation: LoggingExceptionHandler);
       });
 
       it(r'should run writes before reads', (RootScope rootScope, Logger logger, ExceptionHandler e) {
@@ -1461,7 +1461,7 @@ void main() {
 
     describe('exceptionHander', () {
       beforeEachModule((Module module) {
-        module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
+        module.bind(ExceptionHandler, toImplementation: LoggingExceptionHandler);
       });
 
       it('should call ExceptionHandler on zone errors',

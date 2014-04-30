@@ -37,7 +37,7 @@ class DirectiveRef {
  */
 Injector forceNewDirectivesAndFilters(Injector injector, List<Module> modules) {
   modules.add(new Module()
-      ..factory(Scope, (i) {
+      ..bind(Scope, toFactory: (i) {
         var scope = i.parent.get(Scope);
         return scope.createChild(new PrototypeMap(scope.context));
       }));
