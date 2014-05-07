@@ -690,6 +690,36 @@ void main() {
           }
         }));
       });
+
+
+
+      ddescribe('binding ordering', () {
+        beforeEachModule((Module module) {
+          module
+            ..bind(ParentComp)
+            ..bind(ChildDir);
+        });
+
+
+        afterEach((Logger log) {
+          print(log);
+        });
+
+        it('parent bindings should be set before children', async((TestBed _, Logger log) {
+
+          _.rootScope.context['foo'] = 123;
+          var elem = _.compile('<parent-comp my-attr="foo"></parent-comp>');
+
+          microLeap();
+          _.rootScope.apply();
+
+          expect(log).toEqual(['parent set 123', 'child set boo']);
+
+          var elem2 = _.compile('<parent-comp my-attr="foo"></parent-comp>');
+        }));
+      });
+
+
     });
 
 
@@ -1128,5 +1158,39 @@ class LogElementComponent{
     logger(element);
     logger(node);
     logger(shadowRoot);
+  }
+}
+
+@Component(
+    selector: 'parent-comp',
+    template:
+    '''
+<div>
+  <div child-dir="ctrl.forChild"></div>
+</div>
+''',
+    publishAs: 'ctrl',
+    map: const { 'my-attr': '=>myAttr' }
+)
+class ParentComp {
+  Logger log;
+  ParentComp(Logger this.log);
+  set myAttr(v) {
+    log.add('parent set $v');
+  }
+  var forChild = "boo";
+}
+
+@Decorator(
+    selector: '[child-dir]',
+    map: const { 'child-dir': '=>value' }
+)
+class ChildDir {
+  Logger log;
+
+  ChildDir(Logger this.log);
+
+  set value(String v) {
+    log.add('child set $v');
   }
 }
