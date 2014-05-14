@@ -1,0 +1,29 @@
+:host {
+    display: block;
+    margin-top: 5px;
+}
+
+span {
+    font-weight: bold;
+}
+
+.custom-component {
+    color: white;
+    padding: 5px;
+}
+
+.custom-component a {
+    color: white;
+}
+
+.red {
+    background-color: #FF1F1F;
+}
+
+.green {
+    background-color: #1BC123;
+}
+
+.blue {
+    background-color: #4D90FE;
+}
