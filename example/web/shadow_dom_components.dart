@@ -6,12 +6,8 @@ import 'package:angular/application_factory.dart';
 import 'package:di/di.dart';
 
 main() {
-
-  print("hello world");
-
   var app = applicationFactory();
-  app.modules.add(new Module()
-    ..bind(MyComponent));
+  app.modules.add(new Module()..bind(MyComponent));
   app.selector("body");
   app.run();
 }

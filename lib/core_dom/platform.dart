@@ -16,30 +16,29 @@ class Platform {
 
   Platform() {
     var _platformJs = js.context['Platform'];
-    if(_platformJs != null) {
+    if (_platformJs != null) {
       _shadowCss = _platformJs['ShadowCSS'];
 
-      if(_shadowCss != null) {
+      if (_shadowCss != null) {
         _shadowCss['strictStyling'] = true;
       }
     }
   }
 
   String shimCss(String css, { String selector, String cssUrl }) {
-    if(!cssShimRequired)
-      return css;
+    if (!cssShimRequired) return css;
 
     var shimmedCss =  _shadowCss.callMethod('shimCssText', [css, selector]);
     return "/* Shimmed css for <$selector> from $cssUrl */\n$shimmedCss";
   }
 
   void shimShadowDom(dom.Element root, String selector) {
-    if(shadowDomShimRequired) {
+    if (shadowDomShimRequired) {
 
       // This adds an empty attribute with the name of the component tag onto
       // each element in the shadow root.
       root.querySelectorAll("*")
-        .forEach((n) => n.attributes[selector] = "");
+          .forEach((n) => n.attributes[selector] = "");
     }
   }
 }

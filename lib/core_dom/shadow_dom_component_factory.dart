@@ -74,7 +74,7 @@ class _ComponentFactory implements Function {
   final dom.NodeTreeSanitizer treeSanitizer;
   final Expando _expando;
   final NgBaseCss _baseCss;
-  final Map<ComponentAssetKey, async.Future<dom.StyleElement>>
+  final Map<_ComponentAssetKey, async.Future<dom.StyleElement>>
       _styleElementCache;
   final ComponentCssRewriter componentCssRewriter;
   final Platform platform;
@@ -106,7 +106,7 @@ class _ComponentFactory implements Function {
     var tag = element.tagName.toLowerCase();
     if (cssUrls.isNotEmpty) {
       cssFutures = cssUrls.map((cssUrl) => _styleElementCache.putIfAbsent(
-          new ComponentAssetKey(tag, cssUrl), () =>
+          new _ComponentAssetKey(tag, cssUrl), () =>
         http.get(cssUrl, cache: templateCache)
           .then((resp) => resp.responseText,
             onError: (e) => '/*\n$e\n*/\n')
@@ -191,14 +191,14 @@ class _ComponentFactory implements Function {
   }
 }
 
-class ComponentAssetKey {
+class _ComponentAssetKey {
   final String tag;
   final String assetUrl;
 
   final String _key;
 
-  ComponentAssetKey(String tag, String assetUrl)
-    : _key = "$tag|$assetUrl",
+  _ComponentAssetKey(String tag, String assetUrl)
+      : _key = "$tag|$assetUrl",
       this.tag = tag,
       this.assetUrl = assetUrl;
 
@@ -208,7 +208,7 @@ class ComponentAssetKey {
   @override
   int get hashCode => _key.hashCode;
 
-  bool operator ==(key) => key is ComponentAssetKey
+  bool operator ==(key) => key is _ComponentAssetKey
       && tag == key.tag
       && assetUrl == key.assetUrl;
 }
