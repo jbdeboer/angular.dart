@@ -30,7 +30,7 @@ class ShadowDomComponentFactory implements ComponentFactory {
 
   ShadowDomComponentFactory(this._expando);
 
-  final Map<String, async.Future<dom.StyleElement>> _styleElementCache = {};
+  final Map<_ComponentAssetKey, async.Future<dom.StyleElement>> _styleElementCache = {};
 
   FactoryFn call(dom.Node node, DirectiveRef ref) {
     return (Injector injector) {
@@ -46,7 +46,7 @@ class ShadowDomComponentFactory implements ComponentFactory {
             ref.type,
             component,
             injector.get(dom.NodeTreeSanitizer),
-            injector.get(Platform),
+            injector.get(WebPlatform),
             injector.get(ComponentCssRewriter),
             _expando,
             baseCss,
@@ -77,7 +77,7 @@ class _ComponentFactory implements Function {
   final Map<_ComponentAssetKey, async.Future<dom.StyleElement>>
       _styleElementCache;
   final ComponentCssRewriter componentCssRewriter;
-  final Platform platform;
+  final WebPlatform platform;
 
   dom.ShadowRoot shadowDom;
   Scope shadowScope;

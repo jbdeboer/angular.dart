@@ -8,14 +8,14 @@ part of angular.core.dom_internal;
  * http://www.polymer-project.org/docs/polymer/styling.html
  */
 @Injectable()
-class Platform {
+class WebPlatform {
   js.JsObject _platformJs;
   js.JsObject _shadowCss;
 
   bool get cssShimRequired => _shadowCss != null;
   bool get shadowDomShimRequired => _shadowCss != null;
 
-  Platform() {
+  WebPlatform() {
     var _platformJs = js.context['Platform'];
     if (_platformJs != null) {
       _shadowCss = _platformJs['ShadowCSS'];
@@ -47,7 +47,7 @@ class Platform {
 class PlatformViewCache implements ViewCache {
   final ViewCache cache;
   final String selector;
-  final Platform platform;
+  final WebPlatform platform;
 
   get viewFactoryCache => cache.viewFactoryCache;
   Http get http => cache.http;
