@@ -214,6 +214,7 @@ class _ComponentAssetKey {
       && assetUrl == key.assetUrl;
 }
 
+@Injectable()
 class ComponentCssRewriter {
   String call(String css, { String selector, String cssUrl} ) {
     return css;

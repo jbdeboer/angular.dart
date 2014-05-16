@@ -7,6 +7,7 @@ part of angular.core.dom_internal;
  *
  * http://www.polymer-project.org/docs/polymer/styling.html
  */
+@Injectable()
 class Platform {
   js.JsObject _platformJs;
   js.JsObject _shadowCss;

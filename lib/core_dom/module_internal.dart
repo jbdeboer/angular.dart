@@ -64,8 +64,8 @@ class CoreDomModule extends Module {
     bind(TranscludingComponentFactory);
     bind(Content);
     bind(ContentPort, toValue: null);
-    bind(ComponentCssRewriter, toValue: new ComponentCssRewriter());
-    bind(Platform, toValue: new Platform());
+    bind(ComponentCssRewriter);
+    bind(Platform);
     
     bind(Http);
     bind(UrlRewriter);
