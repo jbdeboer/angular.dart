@@ -64,7 +64,7 @@ export "package:angular/core/module_internal.dart" show
     ExceptionHandler,
     Interpolate,
     VmTurnZone,
-    Platform,
+    WebPlatform,
     PrototypeMap,
     RootScope,
     Scope,
