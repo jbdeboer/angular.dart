@@ -5,7 +5,7 @@ import '../_specs.dart';
 import 'dart:js' as js;
 
 main() {
-  ddescribe('Platform', () {
+  describe('Platform', () {
 
     beforeEachModule((Module module) {
       module
