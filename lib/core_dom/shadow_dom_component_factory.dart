@@ -148,6 +148,10 @@ class _ComponentFactory implements Function {
         async.Future.wait(cssFutures).then((Iterable<dom.StyleElement> cssList) {
           // This prevents style duplication by only adding css to the shadow
           // root if there is a native implementation of shadow dom.
+
+          assert(platform.cssShimRequired == false);
+          assert(cssList.length > 0);
+
           if (!platform.cssShimRequired) {
             cssList.where((styleElement) => styleElement != null)
               .forEach((styleElement) {
