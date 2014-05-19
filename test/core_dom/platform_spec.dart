@@ -9,7 +9,7 @@ main() {
 
     beforeEachModule((Module module) {
       module
-        ..bind(SimpleComponent)
+        ..bind(WebPlatformTestComponent)
         ..bind(WebPlatform, toValue: new WebPlatform());
     });
 
@@ -34,8 +34,8 @@ main() {
 //      backend
 //        ..expectGET('style.css').respond(200, 'span{ background-color: red; }');
 
-      Element element = e('<span><simple-component '
-          'color="red">ignore</simple-component></span>');
+      Element element = e('<span><test-wptc '
+          'color="red">ignore</test-wptc></span>');
 
       _.compile(element);
 
@@ -67,7 +67,7 @@ main() {
 }
 
 @Component(
-    selector: "simple-component",
+    selector: "test-wptc",
     publishAs: "ctrl",
     template: """
       <div class="custom-component" ng-class="ctrl.color">
@@ -80,7 +80,7 @@ main() {
       </div>
     """,
     cssUrl: "style.css")
-class SimpleComponent {
+class WebPlatformTestComponent {
   @NgAttr('color')
   String color;
 
