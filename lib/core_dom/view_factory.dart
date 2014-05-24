@@ -49,7 +49,7 @@ class WalkingViewFactory implements ViewFactory {
     var timerId;
     try {
       assert((timerId = _perf.startTimer('ng.view')) != false);
-      var view = new View(nodes, injector.get(EventHandler));
+      var view = new View(nodes, injector.get(EventHandler), injector.get(VmTurnZone).currentZone);
       _link(view, nodes, elementBinders, injector);
       return view;
     } finally {

@@ -4,8 +4,9 @@ class TaggingViewFactory implements ViewFactory {
   final List<TaggedElementBinder> elementBinders;
   final List<dom.Node> templateNodes;
   final Profiler _perf;
+  final VmTurnZone _zone;
 
-  TaggingViewFactory(this.templateNodes, this.elementBinders, this._perf);
+  TaggingViewFactory(this.templateNodes, this.elementBinders, this._perf, this._zone);
 
   BoundViewFactory bind(Injector injector) => new BoundViewFactory(this, injector);
 
@@ -16,7 +17,7 @@ class TaggingViewFactory implements ViewFactory {
     var timerId;
     try {
       assert((timerId = _perf.startTimer('ng.view')) != false);
-      var view = new View(nodes, injector.get(EventHandler));
+      var view = new View(nodes, injector.get(EventHandler), _zone.currentZone);
       _link(view, nodes, injector);
       return view;
     } finally {

@@ -9,9 +9,10 @@ TaggedElementBinder _addBinder(List list, TaggedElementBinder binder) {
 @Injectable()
 class TaggingCompiler implements Compiler {
   final Profiler _perf;
+  final VmTurnZone _zone;
   final Expando _expando;
 
-  TaggingCompiler(this._perf, this._expando);
+  TaggingCompiler(this._perf, this._expando, this._zone);
 
   ElementBinder _elementBinderForNode(NodeCursor domCursor,
                                       ElementBinder useExistingElementBinder,
@@ -136,7 +137,7 @@ class TaggingCompiler implements Compiler {
         directives, -1, null, elementBinders, true);
 
     var viewFactory = new TaggingViewFactory(transcludeCursor.elements,
-        _removeUnusedBinders(elementBinders), _perf);
+        _removeUnusedBinders(elementBinders), _perf, _zone);
 
     return viewFactory;
   }
@@ -150,7 +151,7 @@ class TaggingCompiler implements Compiler {
         null, directives, -1, null, elementBinders, true);
 
     var viewFactory = new TaggingViewFactory(
-        elements, _removeUnusedBinders(elementBinders), _perf);
+        elements, _removeUnusedBinders(elementBinders), _perf, _zone);
 
     assert(_perf.stopTimer(timerId) != false);
     return viewFactory;

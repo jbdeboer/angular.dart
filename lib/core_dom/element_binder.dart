@@ -28,7 +28,7 @@ class TemplateElementBinder extends ElementBinder {
     assert(templateViewFactory != null);
     nodeModule
       ..bind(ViewPort, toFactory: (_) =>
-          new ViewPort(node, parentInjector.get(Animate)))
+          new ViewPort(node, parentInjector.get(Animate), parentInjector.get(VmTurnZone)))
       ..bind(ViewFactory, toValue: templateViewFactory)
       ..bind(BoundViewFactory, toFactory: (Injector injector) =>
           templateViewFactory.bind(injector));

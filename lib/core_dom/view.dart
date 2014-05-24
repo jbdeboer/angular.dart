@@ -14,13 +14,17 @@ part of angular.core.dom_internal;
 class View {
   final List<dom.Node> nodes;
   final EventHandler eventHandler;
+  final int _createdZoneId;
 
-  View(this.nodes, this.eventHandler);
+  View(this.nodes, this.eventHandler, this._createdZoneId);
 
   void registerEvent(String eventName) {
     eventHandler.register(eventName);
   }
 }
+
+int fastViews = 0;
+int totalViews = 0;
 
 /**
  * A ViewPort maintains an ordered list of [View]'s. It contains a
@@ -30,8 +34,9 @@ class ViewPort {
   final dom.Node placeholder;
   final Animate _animate;
   final _views = <View>[];
+  final VmTurnZone _zone;
 
-  ViewPort(this.placeholder, this._animate);
+  ViewPort(this.placeholder, this._animate, this._zone);
 
   void insert(View view, { View insertAfter }) {
     dom.Node previousNode = _lastNode(insertAfter);
@@ -39,11 +44,22 @@ class ViewPort {
 
     _animate.insert(view.nodes, placeholder.parentNode,
       insertBefore: previousNode.nextNode);
+    totalViews++;
+    if (totalViews < 20 || totalViews % 100 == 0) {
+      print("Views: fast:$fastViews total:$totalViews zone:${_zone.currentZone}");
+    }
+
   }
 
   void remove(View view) {
     _views.remove(view);
     _animate.remove(view.nodes);
+    if (view.createdZoneId == _zone.currentZone) {
+      fastViews++;
+      if (fastViews < 20 || fastViews % 20 == 0) {
+        print("Views: fast:$fastViews total:$totalViews");
+      }
+    }
   }
 
   void move(View view, { View moveAfter }) {

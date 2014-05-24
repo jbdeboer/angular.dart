@@ -4,7 +4,7 @@ import '../_specs.dart';
 
 
 forBothCompilers(fn) {
-  describe('walking compiler', () {
+  xdescribe('walking compiler', () {
     beforeEachModule((Module m) {
       m.bind(Compiler, toImplementation: WalkingCompiler);
       return m;

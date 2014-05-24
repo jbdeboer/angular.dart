@@ -78,7 +78,7 @@ main() {
       beforeEach((Injector injector, Profiler perf) {
         rootElement.innerHtml = '<!-- anchor -->';
         anchor = new ViewPort(rootElement.childNodes[0],
-          injector.get(Animate));
+          injector.get(Animate), injector.get(VmTurnZone));
         a = (viewFactoryFactory(es('<span>A</span>a'), [], perf, expando))(injector);
         b = (viewFactoryFactory(es('<span>B</span>b'), [], perf, expando))(injector);
       });
