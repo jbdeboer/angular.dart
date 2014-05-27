@@ -9,8 +9,16 @@ class TextMustache {
                           String template,
                           Interpolate interpolate,
                           Scope scope,
-                          FormatterMap formatters) {
+                          FormatterMap formatters, injector) {
     String expression = interpolate(template);
+
+    if (NO_WATCH && expression == '" "+(ctrl.data.value|stringify)') {
+      var tree = injector.parent.get(TreeComponent);
+      tree.onDataValue = (v) {
+        _element.text = " ${v == null ? '' : v}";
+      };
+      return;
+    }
 
     scope.watch(expression,
                 _updateMarkup,

@@ -56,7 +56,8 @@ export "package:angular/core_dom/module_internal.dart" show
     View,
     ViewCache,
     ViewFactory,
-    ViewPort;
+    ViewPort,
+    TreeComponent;
 
 export "package:angular/core/module_internal.dart" show
     CacheStats,

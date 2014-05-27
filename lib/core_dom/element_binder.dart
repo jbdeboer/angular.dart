@@ -1,5 +1,61 @@
 part of angular.core.dom_internal;
 
+var NO_WATCH = true;
+
+@Component(
+    selector: 'tree',
+    template: '<span> {{ctrl.data.value}}'
+    '<span ng-if="ctrl.data.right != null"><tree data=ctrl.data.right></span>'
+    '<span ng-if="ctrl.data.left != null"><tree data=ctrl.data.left></span>'
+    '</span>',
+    publishAs: 'ctrl')
+class TreeComponent {
+  var _data;
+
+  get data => _data;
+
+  @NgOneWay('data')
+  set data(d) {
+    _data = d;
+    if (d == null) return;
+    _onDataRight(d['right'] != null);
+    _onDataLeft(d['left'] != null);
+    _onDataRightData(d['right']);
+    _onDataLeftData(d['left']);
+    _onDataValue(d['value']);
+  }
+
+  var _onDataRight = (v) {};
+  var _onDataLeft = (v) {};
+  set onDataRight(d) {
+    if (_data != null) d(_data['right'] != null);
+    _onDataRight = d;
+  }
+  set onDataLeft(d) {
+    if (_data != null) d(_data['left'] != null);
+    _onDataLeft = d;
+  }
+
+  var _onDataRightData = (v) {};
+  var _onDataLeftData = (v) {};
+  set onDataRightData(d) {
+    if (_data != null) d(_data['right']);
+    _onDataRightData = d;
+  }
+  set onDataLeftData(d) {
+    if (_data != null) d(_data['left']);
+    _onDataLeftData = d;
+  }
+
+  var _onDataValue = (v) {};
+  set onDataValue(d) {
+    if (_data != null) d(_data['value']);
+    _onDataValue = d;
+  }
+
+  hello() { print("hello tree"); }
+}
+
 class TemplateElementBinder extends ElementBinder {
   final DirectiveRef template;
   ViewFactory templateViewFactory;
@@ -35,6 +91,7 @@ class TemplateElementBinder extends ElementBinder {
   }
 }
 
+var _printed = {};
 
 /**
  * ElementBinder is created by the Selector and is responsible for instantiating
@@ -110,10 +167,47 @@ class ElementBinder {
     }
   }
 
-  _bindOneWay(tasks, expression, scope, dstPathFn, controller, formatters) {
+  _bindOneWay(tasks, expression, scope, dstPathFn, controller, formatters, injector) {
     var taskId = tasks.registerTask();
 
-    Expression attrExprFn = _parser(expression);
+    injector = injector.parent;
+
+    if (NO_WATCH && expression == "ctrl.data.right != null") {
+      var tree = injector.get(TreeComponent);
+      tree.onDataRight = (v) {
+        dstPathFn.assign(controller, v);
+        tasks.completeTask(taskId);
+      };
+      return;
+    }
+
+    if (NO_WATCH && expression == "ctrl.data.left != null") {
+      var tree = injector.get(TreeComponent);
+      tree.onDataLeft = (v) {
+        dstPathFn.assign(controller, v);
+        tasks.completeTask(taskId);
+      };
+      return;
+    }
+
+    if (NO_WATCH && expression == "ctrl.data.left") {
+      var tree = injector.get(TreeComponent);
+      tree.onDataLeftData = (v) {
+        dstPathFn.assign(controller, v);
+        tasks.completeTask(taskId);
+      };
+      return;
+    }
+
+    if (NO_WATCH && expression == "ctrl.data.right") {
+      var tree = injector.get(TreeComponent);
+      tree.onDataRightData = (v) {
+        dstPathFn.assign(controller, v);
+        tasks.completeTask(taskId);
+      };
+      return;
+    }
+
     scope.watch(expression, (v, _) {
       dstPathFn.assign(controller, v);
       tasks.completeTask(taskId);
@@ -126,7 +220,7 @@ class ElementBinder {
 
 
   void _createAttrMappings(directive, scope, List<MappingParts> mappings, nodeAttrs, formatters,
-                           tasks) {
+                           tasks, injector) {
     mappings.forEach((MappingParts p) {
       var attrName = p.attrName;
       var dstExpression = p.dstExpression;
@@ -146,7 +240,7 @@ class ElementBinder {
         } else if(p.mode == '&') {
           _bindCallback(dstPathFn, directive, bindAttr, scope);
         } else {
-          _bindOneWay(tasks, bindAttr, scope, dstPathFn, directive, formatters);
+          _bindOneWay(tasks, bindAttr, scope, dstPathFn, directive, formatters, injector);
         }
         return;
       }
@@ -170,7 +264,7 @@ class ElementBinder {
         case '=>': // one-way
           if (nodeAttrs[attrName] == null) return;
           _bindOneWay(tasks, nodeAttrs[attrName], scope,
-              dstPathFn, directive, formatters);
+              dstPathFn, directive, formatters, injector);
           break;
 
         case '=>!': //  one-way, one-time
@@ -216,7 +310,7 @@ class ElementBinder {
 
       if (ref.mappings.isNotEmpty) {
         if (nodeAttrs == null) nodeAttrs = new _AnchorAttrs(ref);
-        _createAttrMappings(directive, scope, ref.mappings, nodeAttrs, formatters, tasks);
+        _createAttrMappings(directive, scope, ref.mappings, nodeAttrs, formatters, tasks, nodeInjector);
       }
 
       if (directive is AttachAware) {
@@ -242,7 +336,7 @@ class ElementBinder {
     if (ref.type == TextMustache) {
       nodeModule.bindByKey(_TEXT_MUSTACHE_KEY, toFactory: (Injector injector) {
         return new TextMustache(node, ref.value, injector.getByKey(_INTERPOLATE_KEY),
-            injector.getByKey(_SCOPE_KEY), injector.getByKey(_FORMATTER_MAP_KEY));
+            injector.getByKey(_SCOPE_KEY), injector.getByKey(_FORMATTER_MAP_KEY), injector);
       });
     } else if (ref.type == AttrMustache) {
       if (nodesAttrsDirectives.isEmpty) {

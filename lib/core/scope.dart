@@ -214,6 +214,7 @@ class Scope {
    */
   Watch watch(String expression, ReactionFn reactionFn,  {context,
       FormatterMap formatters, bool canChangeModel: true, bool collection: false}) {
+    print("scope.watch $expression");
     assert(isAttached);
     assert(expression is String);
     assert(canChangeModel is bool);
