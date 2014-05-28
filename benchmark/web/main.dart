@@ -2,6 +2,7 @@ import 'package:di/di.dart';
 import 'package:angular/angular.dart';
 import 'package:angular/core_dom/module_internal.dart';
 import 'package:angular/application_factory.dart';
+import 'package:angular/options.dart';
 
 import 'package:benchmark_harness/benchmark_harness.dart';
 
@@ -11,7 +12,7 @@ import 'dart:math';
 import 'dart:js' as js;
 
 /* Gen 100 different directives */
-/*@Component(
+@Component(
   selector: 'tree',
   template: '<span> {{ctrl.data.value}}'
   '<span ng-if="ctrl.data.right != null"><tree data=ctrl.data.right></span>'
@@ -23,7 +24,7 @@ class TreeComponent {
   var data;
 
   hello() { print "hello tree"; }
-}*/
+}
 
 @Component(
   selector: 'tree-click',
@@ -208,6 +209,7 @@ class ViewBenchmark extends BenchmarkBase {
       ..type(TreeComponent)
       ..type(TreeComponentWithClick)
       ..type(HeavyTreeComponent)
+      ..type(NgInternalOptions)
       ..factory(ScopeDigestTTL, (i) => new ScopeDigestTTL.value(15))
       
     ;
