@@ -1,0 +1,28 @@
+<html>
+<head>
+   <title>INFOSTRING</title>
+    <script src="bp.js"></script>
+    <script src="main.dart" type="application/dart"></script>
+    <script src="packages/browser/dart.js"></script>
+    <script src="packages/browser/interop.js"></script>
+</head>
+
+<body ng-app>
+  <div id="benchmarkContainer"></div>
+  <p>
+  Render a 2^9 prefix tree with AngularDart
+  </p>
+
+
+<div>Use default: <input type=checkbox ng-model="useDefault"></div>
+  <div>Use heavy: <input type=checkbox ng-model="useHeavy"></div>
+  <div>With click: <input type=checkbox ng-model="useClick"></div>
+ 
+
+  <tree ng-if="useDefault" data=initData></tree>
+
+  <heavy-tree ng-if="useHeavy" data=initData></heavy-tree>
+  <tree-click ng-if="useClick" data=initData></tree-click> 
+
+</body> 
+</html>
