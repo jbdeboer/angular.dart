@@ -2,6 +2,7 @@ import 'package:di/di.dart';
 import 'package:angular/angular.dart';
 import 'package:angular/core_dom/module_internal.dart';
 import 'package:angular/application_factory.dart';
+import 'package:angular/options.dart';
 
 import 'package:benchmark_harness/benchmark_harness.dart';
 
@@ -208,6 +209,7 @@ class ViewBenchmark extends BenchmarkBase {
       ..type(TreeComponent)
       ..type(TreeComponentWithClick)
       ..type(HeavyTreeComponent)
+      ..type(NgInternalOptions)
       ..factory(ScopeDigestTTL, (i) => new ScopeDigestTTL.value(15))
       
     ;

@@ -19,6 +19,8 @@ import 'package:angular/core/registry.dart';
 
 import 'package:angular/directive/module.dart' show NgBaseCss;
 
+import 'package:angular/options.dart' as opts;
+
 part 'animation.dart';
 part 'view.dart';
 part 'view_factory.dart';

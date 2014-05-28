@@ -12,7 +12,7 @@ class TextMustache {
                           FormatterMap formatters, injector) {
     String expression = interpolate(template);
 
-    if (NO_WATCH && expression == '" "+(ctrl.data.value|stringify)') {
+    if (opts.NO_WATCH && expression == '" "+(ctrl.data.value|stringify)') {
       var tree = injector.parent.get(TreeComponent);
       tree.onDataValue = (v) {
         _element.text = " ${v == null ? '' : v}";

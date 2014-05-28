@@ -1,7 +1,5 @@
 part of angular.core.dom_internal;
 
-var NO_WATCH = true;
-
 @Component(
     selector: 'tree',
     template: '<span> {{ctrl.data.value}}'
@@ -172,7 +170,7 @@ class ElementBinder {
 
     injector = injector.parent;
 
-    if (NO_WATCH && expression == "ctrl.data.right != null") {
+    if (opts.NO_WATCH && expression == "ctrl.data.right != null") {
       var tree = injector.get(TreeComponent);
       tree.onDataRight = (v) {
         dstPathFn.assign(controller, v);
@@ -181,7 +179,7 @@ class ElementBinder {
       return;
     }
 
-    if (NO_WATCH && expression == "ctrl.data.left != null") {
+    if (opts.NO_WATCH && expression == "ctrl.data.left != null") {
       var tree = injector.get(TreeComponent);
       tree.onDataLeft = (v) {
         dstPathFn.assign(controller, v);
@@ -190,7 +188,7 @@ class ElementBinder {
       return;
     }
 
-    if (NO_WATCH && expression == "ctrl.data.left") {
+    if (opts.NO_WATCH && expression == "ctrl.data.left") {
       var tree = injector.get(TreeComponent);
       tree.onDataLeftData = (v) {
         dstPathFn.assign(controller, v);
@@ -199,7 +197,7 @@ class ElementBinder {
       return;
     }
 
-    if (NO_WATCH && expression == "ctrl.data.right") {
+    if (opts.NO_WATCH && expression == "ctrl.data.right") {
       var tree = injector.get(TreeComponent);
       tree.onDataRightData = (v) {
         dstPathFn.assign(controller, v);
