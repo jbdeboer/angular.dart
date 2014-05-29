@@ -17,7 +17,7 @@ import 'package:angular/core_dom/dom_util.dart' as util;
 import 'package:angular/change_detection/watch_group.dart' show Watch, PrototypeMap;
 import 'package:angular/core/registry.dart';
 
-import 'package:angular/directive/module.dart' show NgBaseCss;
+import 'package:angular/directive/module.dart' show NgBaseCss, NgIf, AHref, NgModel, InputCheckbox, NgModelOptions, NgTrueValue, NgFalseValue, NgControl;
 
 import 'package:angular/options.dart' as opts;
 
@@ -47,6 +47,8 @@ part 'tree_sanitizer.dart';
 part 'walking_compiler.dart';
 part 'ng_element.dart';
 part 'static_keys.dart';
+
+part 'custom_injector.dart';
 
 class CoreDomModule extends Module {
   CoreDomModule() {

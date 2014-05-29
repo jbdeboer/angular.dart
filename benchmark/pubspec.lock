@@ -36,9 +36,11 @@ packages:
     source: hosted
     version: "0.9.2"
   di:
-    description: di
-    source: hosted
-    version: "0.0.40"
+    description:
+      path: "/home/deboer/github/dart-di"
+      relative: false
+    source: path
+    version: "0.0.35"
   html5lib:
     description: html5lib
     source: hosted

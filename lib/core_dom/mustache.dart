@@ -9,7 +9,7 @@ class TextMustache {
                           String template,
                           Interpolate interpolate,
                           Scope scope,
-                          FormatterMap formatters, injector) {
+                          FormatterMap formatters, Injector injector) {
     String expression = interpolate(template);
 
     if (opts.NO_WATCH && expression == '" "+(ctrl.data.value|stringify)') {
