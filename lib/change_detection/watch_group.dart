@@ -121,6 +121,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
         _parentWatchGroup = null,
         _cache = new Map<String, WatchRecord<_Handler>>()
   {
+    print("new cache");
     _marker.watchGrp = this;
     _evalWatchTail = _evalWatchHead = _marker;
   }
@@ -140,7 +141,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
   Watch watch(AST expression, ReactionFn reactionFn) {
     WatchRecord<_Handler> watchRecord =
         _cache.putIfAbsent(expression.expression,
-            () => expression.setupWatch(this));
+            () { print("watch: ${expression.expression}"); return expression.setupWatch(this); });
     return watchRecord.handler.addReactionFn(reactionFn);
   }
 

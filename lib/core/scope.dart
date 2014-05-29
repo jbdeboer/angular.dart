@@ -1055,11 +1055,14 @@ class _AstParser {
   AST call(String input, {FormatterMap formatters,
                           bool collection: false,
                           Object context: null }) {
+    print("context: $context");
     _visitor.formatters = formatters;
     AST contextRef = _visitor.contextRef;
     try {
       if (context != null) {
         _visitor.contextRef = new ConstantAST(context, '#${_id++}');
+      } else {
+        throw "Null context not supported";
       }
       var exp = _parser(input);
       return collection ? _visitor.visitCollection(exp) : _visitor.visit(exp);
