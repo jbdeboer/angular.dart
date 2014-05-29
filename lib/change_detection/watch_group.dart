@@ -141,7 +141,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
   Watch watch(AST expression, ReactionFn reactionFn) {
     WatchRecord<_Handler> watchRecord =
         _cache.putIfAbsent(expression.expression,
-            () { print("watch: ${expression.expression}"); return expression.setupWatch(this); });
+            () { /*print("watch: ${expression.expression}"); */ return expression.setupWatch(this); });
     return watchRecord.handler.addReactionFn(reactionFn);
   }
 
