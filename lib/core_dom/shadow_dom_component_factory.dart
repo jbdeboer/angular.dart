@@ -178,7 +178,7 @@ class _ComponentFactory implements Function {
   }
 
   Injector createShadowInjector(injector, TemplateLoader templateLoader) {
-   // var probe;
+    var probe;
     //var shadowModule = new Module()
     var shadowModule = (opts.CUSTOM_INJECTOR ? new CustomModule() : new Module())
       ..bindByKey(typeKey)
