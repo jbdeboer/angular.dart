@@ -18,6 +18,8 @@
   <div>Use heavy: <input type=checkbox ng-model="useHeavy"></div>
   <div>With click: <input type=checkbox ng-model="useClick"></div>
   <div>With baseline: <input type=checkbox ng-model="useBaseline"></div>
+  <div>Baseline + scope: <input type=checkbox ng-model="useBaselineScoped"></div>
+  <div>Baseline + class: <input type=checkbox ng-model="useBaselineClass"></div>
  
 
   <tree ng-if="useDefault" data=initData></tree>
@@ -25,6 +27,8 @@
   <heavy-tree ng-if="useHeavy" data=initData></heavy-tree>
   <tree-click ng-if="useClick" data=initData></tree-click> 
   <ng-free-tree ng-if="useBaseline" data=initData></ng-free-tree>
+  <ng-free-tree-scoped ng-if="useBaselineScoped" data=initData></ng-free-tree-scoped>
+  <ng-free-tree-class ng-if="useBaselineClass" data=initData></ng-free-tree-class>
 
 </body> 
 </html>

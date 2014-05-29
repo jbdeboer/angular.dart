@@ -48,46 +48,206 @@ class NgFreeTree implements ShadowRootAware {
 
 	@NgOneWay('data')
 	set data(v) {
-		print("data set");
 		_data = v;
 		if (sroot != null)
 		updateElement(sroot, _data);
 	}
 
 	ShadowRoot sroot;
-	NgFreeTree() {
-		print("created");
-	}
 
 	onShadowRoot(root) {
 		sroot = root;
-		print("onShadowRoot");
 		if (_data != null) updateElement(sroot, _data);
 	}
 
-	updateElement(root, tree) {
-		root.innerHtml = '';
+    Element newFreeTree(tree) {
+    	var elt = new Element.tag('ng-fre-tree');
+    	var root = elt.createShadowRoot();
+
 		var s = new SpanElement();
 		root.append(s);
 		var value = tree['value'];
-		if (value == null) { return; }
-		s.text = " $value";
+		if (value != null) {
+		  s.text = " $value";
+	    }
 		if (tree.containsKey('right')) {
 			var sr = new SpanElement();
 			s.append(sr);
-			updateElement(sr.createShadowRoot(), tree['right']);
+			sr.append(newFreeTree(tree['right']));
 		}
 		if (tree.containsKey('left')) {
 			var sl = new SpanElement();
 			s.append(sl);
-			updateElement(sl.createShadowRoot(), tree['left']);
+			sl.append(newFreeTree(tree['left']));
 		}
+		return elt;
+    }
+
+	updateElement(root, tree) {
+		// Not quite acurate
+		root.innerHtml = '';
+		root.append(newFreeTree(tree));
+	}
+}
+
+
+@Component(
+	selector: 'ng-free-tree-scoped',
+	template: ''
+	)
+class NgFreeTreeScoped implements ShadowRootAware {
+	var _data;
+
+	@NgOneWay('data')
+	set data(v) {
+		_data = v;
+		if (sroot != null)
+		updateElement(sroot, _data);
+	}
+
+	ShadowRoot sroot;
+	Scope scope;
+	NgFreeTreeScoped(Scope this.scope);
+
+	onShadowRoot(root) {
+		sroot = root;
+		if (_data != null) updateElement(sroot, _data);
+	}
+
+    Element newFreeTree(parentScope, treeExpr) {
+    	var elt = new Element.tag('ng-fre-tree');
+    	var root = elt.createShadowRoot();
+    	var scope = parentScope.createChild({});
+
+    	parentScope.watch(treeExpr, (v, _) {
+			scope.context['tree'] = v;
+    	});
+    	
+		var s = new SpanElement();
+		root.append(s);
+		scope.watch('tree.value', (v, _) {
+			if (v != null) {
+				s.text = " $v";
+			}
+		});
+		
+		scope.watch('tree.right != null', (v, _) {
+			if (v != true) return;
+			var sr = new SpanElement();
+			s.append(sr);
+			sr.append(newFreeTree(scope, 'tree.right'));
+		});
+		
+		scope.watch('tree.left != null', (v, _) {
+			if (v != true) return;
+			var sl = new SpanElement();
+			s.append(sl);
+			sl.append(newFreeTree(scope, 'tree.left'));
+		});
+		
+		return elt;
+    }
+
+    var ss;
+	updateElement(root, tree) {
+		// Not quite acurate
+		if (ss != null) { ss.destroy(); }
+		ss = scope.createChild({});
+		ss.context['tree'] = tree;
+		root.innerHtml = '';
+		root.append(newFreeTree(ss, 'tree'));
+	}
+}
+
+
+class FreeTreeClass {
+	// One-way bound
+	var tree;
+
+    var parentScope;
+
+	FreeTreeClass(this.parentScope, treeExpr) {
+		parentScope.watch(treeExpr, (v, _) {
+			tree = v;
+    	});
+	}
+
+	element() {
+		var elt = new Element.tag('ng-fre-tree');
+    	var root = elt.createShadowRoot();
+    	var scope = parentScope.createChild(this);
+
+    	    	
+		var s = new SpanElement();
+		root.append(s);
+		scope.watch('tree.value', (v, _) {
+			if (v != null) {
+				s.text = " $v";
+			}
+		});
+		
+		scope.watch('tree.right != null', (v, _) {
+			if (v != true) return;
+			var sr = new SpanElement();
+			s.append(sr);
+			var ft = new FreeTreeClass(scope, 'tree.right');
+			sr.append(ft.element());
+		});
+		
+		scope.watch('tree.left != null', (v, _) {
+			if (v != true) return;
+			var sl = new SpanElement();
+			s.append(sl);
+			var ft = new FreeTreeClass(scope, 'tree.left');
+			sl.append(ft.element());
+		});
+		
+		return elt;
 	}
 }
 
 @Component(
+	selector: 'ng-free-tree-class',
+	template: ''
+	)
+class NgFreeTreeClass implements ShadowRootAware {
+	var _data;
+
+	@NgOneWay('data')
+	set data(v) {
+		_data = v;
+		if (sroot != null)
+		updateElement(sroot, _data);
+	}
+
+	ShadowRoot sroot;
+	Scope scope;
+	NgFreeTreeClass(Scope this.scope);
+
+	onShadowRoot(root) {
+		sroot = root;
+		if (_data != null) updateElement(sroot, _data);
+	}
+
+
+    var ss;
+	updateElement(root, tree) {
+		// Not quite acurate
+		if (ss != null) { ss.destroy(); }
+		ss = scope.createChild({});
+		ss.context['tree'] = tree;
+		root.innerHtml = '';
+		root.append(new FreeTreeClass(ss, 'tree').element());
+	}
+}
+
+
+
+
+
+@Component(
   selector: 'heavy-tree',
-  template: '<span> {{ctrl.data.value}}'
+  template: '<span> {{ctrl.data.value}} {{tree}}'
   '<span ng-if="ctrl.data.right != null"><heavy-tree data=ctrl.data.right a1="1+1" a2=0 a3=0 a4=0 a5=0 a6=0 a7=0 a8=0 a9=0 a10=0 '
   'b1=0 b2=0 b3=0 b4=0 b5=0 b6=0 b7=0 b8=0 b9=0 b10=0 '
   'c1=0 c2=0 c3=0 c4=0 c5=0 c6=0 c7=0 c8=0 c9=0 c10=0 ' 
@@ -258,6 +418,8 @@ class ViewBenchmark extends BenchmarkBase {
       ..type(HeavyTreeComponent)
       ..type(NgInternalOptions)
       ..type(NgFreeTree)
+      ..type(NgFreeTreeScoped)
+      ..type(NgFreeTreeClass)
       ..factory(ScopeDigestTTL, (i) => new ScopeDigestTTL.value(15))
       
     ;
