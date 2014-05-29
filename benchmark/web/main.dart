@@ -38,6 +38,53 @@ class TreeComponentWithClick {
   var data;
 }
 
+
+@Component(
+	selector: 'ng-free-tree',
+	template: ''
+	)
+class NgFreeTree implements ShadowRootAware {
+	var _data;
+
+	@NgOneWay('data')
+	set data(v) {
+		print("data set");
+		_data = v;
+		if (sroot != null)
+		updateElement(sroot, _data);
+	}
+
+	ShadowRoot sroot;
+	NgFreeTree() {
+		print("created");
+	}
+
+	onShadowRoot(root) {
+		sroot = root;
+		print("onShadowRoot");
+		if (_data != null) updateElement(sroot, _data);
+	}
+
+	updateElement(root, tree) {
+		root.innerHtml = '';
+		var s = new SpanElement();
+		root.append(s);
+		var value = tree['value'];
+		if (value == null) { return; }
+		s.text = " $value";
+		if (tree.containsKey('right')) {
+			var sr = new SpanElement();
+			s.append(sr);
+			updateElement(sr.createShadowRoot(), tree['right']);
+		}
+		if (tree.containsKey('left')) {
+			var sl = new SpanElement();
+			s.append(sl);
+			updateElement(sl.createShadowRoot(), tree['left']);
+		}
+	}
+}
+
 @Component(
   selector: 'heavy-tree',
   template: '<span> {{ctrl.data.value}}'
@@ -210,6 +257,7 @@ class ViewBenchmark extends BenchmarkBase {
       ..type(TreeComponentWithClick)
       ..type(HeavyTreeComponent)
       ..type(NgInternalOptions)
+      ..type(NgFreeTree)
       ..factory(ScopeDigestTTL, (i) => new ScopeDigestTTL.value(15))
       
     ;

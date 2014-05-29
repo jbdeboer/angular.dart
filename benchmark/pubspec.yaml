@@ -4,8 +4,7 @@ description: Angular benchmarks
 dependencies:
   angular:
     path: ..
-  di:
-    path: /home/deboer/github/dart-di
+  di: '0.0.40'
 dev_dependencies:
   benchmark_harness: '>=1.0.0'
   unittest: '>=0.10.1 <0.12.0'

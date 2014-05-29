@@ -13,13 +13,13 @@ part of angular.core.dom_internal;
  */
 class View {
   final List<dom.Node> nodes;
-  final EventHandler eventHandler;
+  //final EventHandler eventHandler;
 
-  View(this.nodes, this.eventHandler);
+  View(this.nodes);
 
-  void registerEvent(String eventName) {
-    eventHandler.register(eventName);
-  }
+   void registerEvent(String eventName) {
+  //   eventHandler.register(eventName);
+   }
 }
 
 /**
