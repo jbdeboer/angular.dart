@@ -15,10 +15,17 @@ class BoundViewFactory {
 
   BoundViewFactory(this.viewFactory, this.injector);
 
-  static Key _SCOPE_KEY = new Key(Scope);
+//  View xcall(Scope scope) =>
+//      viewFactory(injector.createChild([new Module()..bind(Scope, toValue: scope)]));
 
-  View call(Scope scope) =>
-      viewFactory(injector.createChild([new Module()..bindByKey(_SCOPE_KEY, toValue: scope)]));
+  static Key _SCOPE_KEY = new Key(Scope);
+  View call(Scope scope) {
+    var inj = opts.CUSTOM_INJECTOR ? (new CustomInjector(injector, new CustomModule()
+      ..bindByKey(_SCOPE_KEY, toValue: scope))) : (injector.createChild([new Module()
+      ..bindByKey(_SCOPE_KEY, toValue: scope)]));
+
+    return viewFactory(inj);
+  }
 }
 
 abstract class ViewFactory implements Function {

@@ -41,6 +41,7 @@ class TemplateElementBinder extends ElementBinder {
  * individual directives and binding element properties.
  */
 class ElementBinder {
+  
   // DI Services
   final Profiler _perf;
   final Expando _expando;
@@ -291,7 +292,7 @@ class ElementBinder {
     if (!hasDirectivesOrEvents) return parentInjector;
 
     var nodesAttrsDirectives = [];
-    var nodeModule = new Module()
+    var nodeModule = (opts.CUSTOM_INJECTOR ? new CustomModule() : new Module())
         ..bindByKey(_NG_ELEMENT_KEY)
         ..bindByKey(_VIEW_KEY, toValue: view)
         ..bindByKey(_ELEMENT_KEY, toValue: node)
@@ -316,7 +317,11 @@ class ElementBinder {
 
     _registerViewFactory(node, parentInjector, nodeModule);
 
-    nodeInjector = parentInjector.createChild([nodeModule]);
+    if (opts.CUSTOM_INJECTOR) {
+      nodeInjector = new CustomInjector(parentInjector, nodeModule);
+    } else {
+      nodeInjector = parentInjector.createChild([nodeModule]);
+    }
     probe = _expando[node] = new ElementProbe(
         parentInjector.getByKey(_ELEMENT_PROBE_KEY), node, nodeInjector, scope);
 

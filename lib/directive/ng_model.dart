@@ -31,7 +31,7 @@ class _NoopModelConverter extends NgModelConverter {
 class NgModel extends NgControl implements AttachAware {
   final Scope _scope;
 
-  BoundSetter setter = (_, [__]) => null;
+  BoundSetter setter = (_, [__]) { print("model not SET"); return null; };
 
   String _expression;
   var _originalValue, _viewValue, _modelValue;

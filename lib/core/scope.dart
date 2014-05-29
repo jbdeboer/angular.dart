@@ -98,6 +98,7 @@ class ScopeLocals implements Map {
     _scope[name] = value;
   }
   dynamic operator [](String name) {
+
     // Map needed to clear Dart2js warning
     Map map = _locals.containsKey(name) ? _locals : _scope;
     return map[name];
