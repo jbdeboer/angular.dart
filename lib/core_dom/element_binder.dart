@@ -247,9 +247,8 @@ class ElementBinder {
   void _createDirectiveFactories(DirectiveRef ref, nodeModule, node, nodesAttrsDirectives, nodeAttrs,
                                  visibility) {
     if (ref.type == TextMustache) {
-      nodeModule.bindByKey(_TEXT_MUSTACHE_KEY, toFactory: (Injector injector) {
-        return new TextMustache(node, ref.value, injector.getByKey(_INTERPOLATE_KEY),
-            injector.getByKey(_SCOPE_KEY), injector.getByKey(_FORMATTER_MAP_KEY));
+      nodeModule.bind(TextMustache, toFactory: (Injector injector) {
+        return new TextMustache(node, ref.valueAST, injector.getByKey(_SCOPE_KEY));
       });
     } else if (ref.type == AttrMustache) {
       if (nodesAttrsDirectives.isEmpty) {

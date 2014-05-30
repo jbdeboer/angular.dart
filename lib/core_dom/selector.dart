@@ -23,12 +23,15 @@ part of angular.core.dom_internal;
 class DirectiveSelector {
   ElementBinderFactory _binderFactory;
   DirectiveMap _directives;
+  Interpolate _interpolate;
+  FormatterMap _formatters;
+  ASTParser _astParser;
   var elementSelector = new _ElementSelector('');
   var attrSelector = <_ContainsSelector>[];
   var textSelector = <_ContainsSelector>[];
 
   /// Parses all the [_directives] so they can be retrieved via [matchElement]
-  DirectiveSelector(this._directives, this._binderFactory) {
+  DirectiveSelector(this._directives, this._formatters, this._binderFactory, this._interpolate, this._astParser) {
     _directives.forEach((Directive annotation, Type type) {
       var match;
       var selector = annotation.selector;
@@ -130,8 +133,12 @@ class DirectiveSelector {
       var selectorRegExp = textSelector[k];
       if (selectorRegExp.regexp.hasMatch(value)) {
         _directives[selectorRegExp.annotation].forEach((type) {
+          // Pre-compute the AST to watch this value.
+          String expression = _interpolate(value);
+          var valueAST = _astParser(expression, formatters: _formatters);
+
           builder.addDirective(new DirectiveRef(node, type,
-              selectorRegExp.annotation, new Key(type), value));
+              selectorRegExp.annotation, new Key(type), value, valueAST));
         });
       }
     }
@@ -147,11 +154,13 @@ class DirectiveSelector {
 @Injectable()
 class DirectiveSelectorFactory {
   ElementBinderFactory _binderFactory;
+  Interpolate _interpolate;
+  ASTParser _astParser;
 
-  DirectiveSelectorFactory(this._binderFactory);
+  DirectiveSelectorFactory(this._binderFactory, this._interpolate, this._astParser);
 
-  DirectiveSelector selector(DirectiveMap directives) =>
-      new DirectiveSelector(directives, _binderFactory);
+  DirectiveSelector selector(DirectiveMap directives, FormatterMap formatters) =>
+      new DirectiveSelector(directives, formatters, _binderFactory, _interpolate, _astParser);
 }
 
 class _Directive {
