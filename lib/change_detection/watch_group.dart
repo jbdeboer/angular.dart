@@ -121,7 +121,6 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
         _parentWatchGroup = null,
         _cache = new Map<String, WatchRecord<_Handler>>()
   {
-    print("new cache");
     _marker.watchGrp = this;
     _evalWatchTail = _evalWatchHead = _marker;
   }

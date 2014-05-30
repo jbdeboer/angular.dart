@@ -213,20 +213,45 @@ class Scope {
    *   by reference. When watching a collection, the reaction function receives a
    *   [CollectionChangeItem] that lists all the changes.
    */
-  Watch watch(AST ast, ReactionFn reactionFn,  {
+  Watch watch(String expression, ReactionFn reactionFn,  {context,
+      FormatterMap formatters, bool canChangeModel: true, bool collection: false}) {
+    assert(context == null);
+
+    Watch watch;
+    ReactionFn fn = reactionFn;
+
+    if (expression.isEmpty) {
+      expression = '""';
+    } else {
+      if (expression.startsWith('::')) {
+        expression = expression.substring(2);
+        fn = (value, last) {
+          if (value != null) {
+            watch.remove();
+            return reactionFn(value, last);
+          }
+        };
+      } else if (expression.startsWith(':')) {
+        expression = expression.substring(1);
+        fn = (value, last) {
+          if (value != null)  reactionFn(value, last);
+        };
+      }
+    }
+
+    return watch = watchAST(
+        astForExpression(expression, formatters, collection),
+        fn, canChangeModel: canChangeModel);
+  }
+
+  Watch watchAST(AST ast, ReactionFn reactionFn,  {
       bool canChangeModel: true}) {
     assert(isAttached);
     assert(ast != null);
     assert(canChangeModel is bool);
 
-    Watch watch;
-    ReactionFn fn = reactionFn;
-    
-
-    
-
     WatchGroup group = canChangeModel ? _readWriteGroup : _readOnlyGroup;
-    return watch = group.watch(ast, fn);
+    return group.watch(ast, reactionFn);
   }
 
   AST astForExpression(expression, formatters, collection) {

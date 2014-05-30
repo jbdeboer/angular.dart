@@ -153,7 +153,7 @@ class NgModel extends NgControl implements AttachAware {
           collection: true);
     } else if (_expression != null) {
       var ast = _scope.astForExpression(_expression, null, false);
-      _watch = _scope.watch(ast, onChange);
+      _watch = _scope.watchAST(ast, onChange);
     }
   }
 

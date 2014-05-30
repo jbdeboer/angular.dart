@@ -100,14 +100,15 @@ class ElementBinder {
       }
     }, formatters: formatters);
     if (expressionFn.isAssignable) {
-      scope.watch(dstExpression, (outboundValue, _) {
+      var controllerScope = scope.createChild(controller);
+      controllerScope.watch(dstExpression, (outboundValue, _) {
         if (!viewOutbound) {
           viewInbound = true;
           scope.rootScope.runAsync(() => viewInbound = false);
           expressionFn.assign(scope.context, outboundValue);
           tasks.completeTask(taskId);
         }
-      }, context: controller, formatters: formatters);
+      }, formatters: formatters);
     }
   }
 
@@ -115,7 +116,7 @@ class ElementBinder {
     var taskId = tasks.registerTask();
 
     var ast = scope.astForExpression(expression, formatters, false);
-    scope.watch(ast, (v, _) {
+    scope.watchAST(ast, (v, _) {
       dstPathFn.assign(controller, v);
       tasks.completeTask(taskId);
     });
@@ -224,7 +225,7 @@ class ElementBinder {
         var taskId = tasks.registerTask();
         Watch watch;
         var ast = scope.astForExpression('1', null, false);
-        watch = scope.watch(ast, // Cheat a bit.
+        watch = scope.watchAST(ast, // Cheat a bit.
             (_, __) {
           watch.remove();
           tasks.completeTask(taskId);

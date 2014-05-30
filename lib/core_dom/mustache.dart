@@ -9,7 +9,7 @@ class TextMustache {
                           AST ast,
                           Scope scope
                           ) {
-    scope.watch(ast,
+    scope.watchAST(ast,
                 _updateMarkup,
                 canChangeModel: false
                 );

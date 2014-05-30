@@ -27,7 +27,7 @@ void main() {
       var getterFactory = new DynamicFieldGetterFactory();
       changeDetector = new DirtyCheckingChangeDetector(getterFactory);
       watchGrp = new RootWatchGroup(getterFactory, changeDetector, context);
-      visitor = new ExpressionVisitor(new DynamicClosureMap());
+      visitor = new ExpressionVisitor(new DynamicClosureMap(), new ContextReferenceAST(), null);
       logger = _logger;
       parser = _parser;
     }));
