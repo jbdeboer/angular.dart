@@ -98,8 +98,12 @@ class DirectiveSelector {
           // we need to pass the name to the directive by prefixing it to
           // the value. Yes it is a bit of a hack.
           _directives[selectorRegExp.annotation].forEach((type) {
+            // Pre-compute the AST to watch this value.
+            String expression = _interpolate(value);
+            AST valueAST = _astParser(expression, formatters: _formatters);
+
             builder.addDirective(new DirectiveRef(
-                node, type, selectorRegExp.annotation, new Key(type), '$attrName=$value'));
+                node, type, selectorRegExp.annotation, new Key(type), attrName, valueAST));
           });
         }
       }

@@ -123,7 +123,9 @@ main() {
       it('should match attributes', () {
         expect(selector(element = e('<div attr="before-xyz-after"></div>')),
         toEqualsDirectiveInfos([
-            { "selector": '[*=/xyz/]', "value": 'attr=before-xyz-after',
+            { "selector": '[*=/xyz/]',
+                "value": 'attr',
+                "ast": '"before-xyz-after"',
                 "element": element, "name": 'attr'}
         ]));
       });

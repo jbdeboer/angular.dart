@@ -254,10 +254,8 @@ class ElementBinder {
       if (nodesAttrsDirectives.isEmpty) {
         nodeModule.bind(AttrMustache, toFactory: (Injector injector) {
           var scope = injector.getByKey(_SCOPE_KEY);
-          var interpolate = injector.getByKey(_INTERPOLATE_KEY);
           for (var ref in nodesAttrsDirectives) {
-            new AttrMustache(nodeAttrs, ref.value, interpolate, scope,
-                injector.getByKey(_FORMATTER_MAP_KEY));
+            new AttrMustache(nodeAttrs, ref.value, ref.valueAST, scope);
           }
         });
       }
