@@ -200,8 +200,6 @@ class Scope {
    *   evaluates to a non-null value.
    * * [reactionFn]: The reaction function to execute when a change is detected in the watched
    *   expression.
-   * * [context]: The object against which the expression is evaluated. This defaults to the
-   *   [Scope.context] if no context is specified.
    * * [formatters]: If the watched expression contains formatters,
    *   this map specifies the set of formatters that are used by the expression.
    * * [canChangeModel]: Specifies whether the [reactionFn] changes the model. Reaction
@@ -212,8 +210,8 @@ class Scope {
    *   by reference. When watching a collection, the reaction function receives a
    *   [CollectionChangeItem] that lists all the changes.
    */
-  Watch watch(String expression, ReactionFn reactionFn,  {context,
-      FormatterMap formatters, bool canChangeModel: true, bool collection: false}) {
+  Watch watch(String expression, ReactionFn reactionFn,
+              {FormatterMap formatters, bool canChangeModel: true, bool collection: false}) {
     assert(isAttached);
     assert(expression is String);
     assert(canChangeModel is bool);
@@ -239,7 +237,7 @@ class Scope {
       }
     }
 
-    AST ast = rootScope._astParser(expression, context: context,
+    AST ast = rootScope._astParser(expression,
         formatters: formatters, collection: collection);
 
     WatchGroup group = canChangeModel ? _readWriteGroup : _readOnlyGroup;
@@ -1052,14 +1050,10 @@ class _AstParser {
       : _visitor = new ExpressionVisitor(closureMap);
 
   AST call(String input, {FormatterMap formatters,
-                          bool collection: false,
-                          Object context: null }) {
+                          bool collection: false }) {
     _visitor.formatters = formatters;
     AST contextRef = _visitor.contextRef;
     try {
-      if (context != null) {
-        _visitor.contextRef = new ConstantAST(context, '#${_id++}');
-      }
       var exp = _parser(input);
       return collection ? _visitor.visitCollection(exp) : _visitor.visit(exp);
     } finally {
