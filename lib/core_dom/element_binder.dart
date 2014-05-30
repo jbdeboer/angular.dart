@@ -114,11 +114,11 @@ class ElementBinder {
   _bindOneWay(tasks, expression, scope, dstPathFn, controller, formatters) {
     var taskId = tasks.registerTask();
 
-    Expression attrExprFn = _parser(expression);
-    scope.watch(expression, (v, _) {
+    var ast = scope.astForExpression(expression, formatters, false);
+    scope.watch(ast, (v, _) {
       dstPathFn.assign(controller, v);
       tasks.completeTask(taskId);
-    }, formatters: formatters);
+    });
   }
 
   void _bindCallback(dstPathFn, controller, expression, scope) {
@@ -223,7 +223,8 @@ class ElementBinder {
       if (directive is AttachAware) {
         var taskId = tasks.registerTask();
         Watch watch;
-        watch = scope.watch('1', // Cheat a bit.
+        var ast = scope.astForExpression('1', null, false);
+        watch = scope.watch(ast, // Cheat a bit.
             (_, __) {
           watch.remove();
           tasks.completeTask(taskId);
@@ -242,8 +243,8 @@ class ElementBinder {
                                  visibility) {
     if (ref.type == TextMustache) {
       nodeModule.bindByKey(_TEXT_MUSTACHE_KEY, toFactory: (Injector injector) {
-        return new TextMustache(node, ref.value, injector.getByKey(_INTERPOLATE_KEY),
-            injector.getByKey(_SCOPE_KEY), injector.getByKey(_FORMATTER_MAP_KEY));
+        return new TextMustache(node, ref.valueAST,
+            injector.getByKey(_SCOPE_KEY));
       });
     } else if (ref.type == AttrMustache) {
       if (nodesAttrsDirectives.isEmpty) {

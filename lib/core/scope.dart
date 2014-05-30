@@ -213,39 +213,25 @@ class Scope {
    *   by reference. When watching a collection, the reaction function receives a
    *   [CollectionChangeItem] that lists all the changes.
    */
-  Watch watch(String expression, ReactionFn reactionFn,  {context,
-      FormatterMap formatters, bool canChangeModel: true, bool collection: false}) {
+  Watch watch(AST ast, ReactionFn reactionFn,  {
+      bool canChangeModel: true}) {
     assert(isAttached);
-    assert(expression is String);
+    assert(ast != null);
     assert(canChangeModel is bool);
 
     Watch watch;
     ReactionFn fn = reactionFn;
-    if (expression.isEmpty) {
-      expression = '""';
-    } else {
-      if (expression.startsWith('::')) {
-        expression = expression.substring(2);
-        fn = (value, last) {
-          if (value != null) {
-            watch.remove();
-            return reactionFn(value, last);
-          }
-        };
-      } else if (expression.startsWith(':')) {
-        expression = expression.substring(1);
-        fn = (value, last) {
-          if (value != null)  reactionFn(value, last);
-        };
-      }
-    }
+    
 
-    var astc = context == null ? this.context : context;
-    AST ast = rootScope._astParser(expression, context: astc,
-        formatters: formatters, collection: collection);
+    
 
     WatchGroup group = canChangeModel ? _readWriteGroup : _readOnlyGroup;
     return watch = group.watch(ast, fn);
+  }
+
+  AST astForExpression(expression, formatters, collection) {
+    return rootScope._astParser(expression,
+        formatters: formatters, collection: collection);
   }
 
   dynamic eval(expression, [Map locals]) {
@@ -1053,9 +1039,9 @@ class _AstParser {
   _AstParser(this._parser, ClosureMap this._closureMap);
 
   AST call(String input, {FormatterMap formatters,
-                          bool collection: false,
-                          Object context: null }) {
-    var visitor = new ExpressionVisitor(_closureMap, new ConstantAST(context, '#${_id++}'), formatters);
+                          bool collection: false
+                          }) {
+    var visitor = new ExpressionVisitor(_closureMap, new ContextReferenceAST(), formatters);
     var exp = _parser(input);
     return collection ? visitor.visitCollection(exp) : visitor.visit(exp);
   }

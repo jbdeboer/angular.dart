@@ -19,9 +19,10 @@ class DirectiveRef {
   final Key typeKey;
   final Directive annotation;
   final String value;
+  final AST valueAST;
   final mappings = new List<MappingParts>();
 
-  DirectiveRef(this.element, this.type, this.annotation, this.typeKey, [ this.value ]);
+  DirectiveRef(this.element, this.type, this.annotation, this.typeKey, [ this.value, this.valueAST ]);
 
   String toString() {
     var html = element is dom.Element

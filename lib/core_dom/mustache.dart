@@ -6,16 +6,13 @@ class TextMustache {
   final dom.Node _element;
 
   TextMustache(this._element,
-                          String template,
-                          Interpolate interpolate,
-                          Scope scope,
-                          FormatterMap formatters) {
-    String expression = interpolate(template);
-
-    scope.watch(expression,
+                          AST ast,
+                          Scope scope
+                          ) {
+    scope.watch(ast,
                 _updateMarkup,
-                canChangeModel: false,
-                formatters: formatters);
+                canChangeModel: false
+                );
   }
 
   void _updateMarkup(text, previousText) {
