@@ -1048,51 +1048,30 @@ class _FunctionChain {
 class _AstParser {
   final Parser _parser;
   int _id = 0;
-  final ExpressionVisitor _visitor;
+  final ClosureMap _closureMap;
 
-  _AstParser(this._parser, ClosureMap closureMap)
-      : _visitor = new ExpressionVisitor(closureMap);
+  _AstParser(this._parser, ClosureMap this._closureMap);
 
   AST call(String input, {FormatterMap formatters,
                           bool collection: false,
                           Object context: null }) {
-    //print("context: $context");
-    _visitor.formatters = formatters;
-    //AST contextRef = _visitor.contextRef;
-    //try {
-      if (context != null) {
-        _visitor.contextRef = new ConstantAST(context, '#${_id++}');
-      } else {
-        throw "Null context not supported";
-      }
-      var exp = _parser(input);
-      return collection ? _visitor.visitCollection(exp) : _visitor.visit(exp);
-    //} finally {
-    //  _visitor.contextRef = contextRef;
-    //  _visitor.formatters = null;
-    //}
+    var visitor = new ExpressionVisitor(_closureMap, new ConstantAST(context, '#${_id++}'), formatters);
+    var exp = _parser(input);
+    return collection ? visitor.visitCollection(exp) : visitor.visit(exp);
   }
 }
 
 class ExpressionVisitor implements syntax.Visitor {
-  static final ContextReferenceAST scopeContextRef = new ContextReferenceAST();
   final ClosureMap _closureMap;
-  AST contextRef = scopeContextRef;
+  final AST contextRef;
 
 
-  ExpressionVisitor(this._closureMap);
+  ExpressionVisitor(this._closureMap, this.contextRef, this.formatters);
 
-  AST ast;
-  FormatterMap formatters;
+  final FormatterMap formatters;
 
   AST visit(syntax.Expression exp) {
-    exp.accept(this);
-    assert(ast != null);
-    try {
-      return ast;
-    } finally {
-      ast = null;
-    }
+    return exp.accept(this);
   }
 
   AST visitCollection(syntax.Expression exp) => new CollectionAST(visit(exp));
@@ -1110,53 +1089,53 @@ class ExpressionVisitor implements syntax.Visitor {
     return result;
   }
 
-  void visitCallScope(syntax.CallScope exp) {
+  visitCallScope(syntax.CallScope exp) {
     List<AST> positionals = _toAst(exp.arguments.positionals);
     Map<Symbol, AST> named = _toAstMap(exp.arguments.named);
-    ast = new MethodAST(contextRef, exp.name, positionals, named);
+    return new MethodAST(contextRef, exp.name, positionals, named);
   }
-  void visitCallMember(syntax.CallMember exp) {
+  visitCallMember(syntax.CallMember exp) {
     List<AST> positionals = _toAst(exp.arguments.positionals);
     Map<Symbol, AST> named = _toAstMap(exp.arguments.named);
-    ast = new MethodAST(visit(exp.object), exp.name, positionals, named);
+    return new MethodAST(visit(exp.object), exp.name, positionals, named);
   }
-  void visitAccessScope(syntax.AccessScope exp) {
-    ast = new FieldReadAST(contextRef, exp.name);
+  visitAccessScope(syntax.AccessScope exp) {
+    return new FieldReadAST(contextRef, exp.name);
   }
-  void visitAccessMember(syntax.AccessMember exp) {
-    ast = new FieldReadAST(visit(exp.object), exp.name);
+  visitAccessMember(syntax.AccessMember exp) {
+    return new FieldReadAST(visit(exp.object), exp.name);
   }
-  void visitBinary(syntax.Binary exp) {
-    ast = new PureFunctionAST(exp.operation,
+  visitBinary(syntax.Binary exp) {
+    return new PureFunctionAST(exp.operation,
                               _operationToFunction(exp.operation),
                               [visit(exp.left), visit(exp.right)]);
   }
-  void visitPrefix(syntax.Prefix exp) {
-    ast = new PureFunctionAST(exp.operation,
+  visitPrefix(syntax.Prefix exp) {
+    return new PureFunctionAST(exp.operation,
                               _operationToFunction(exp.operation),
                               [visit(exp.expression)]);
   }
-  void visitConditional(syntax.Conditional exp) {
-    ast = new PureFunctionAST('?:', _operation_ternary,
+  visitConditional(syntax.Conditional exp) {
+    return new PureFunctionAST('?:', _operation_ternary,
                               [visit(exp.condition), visit(exp.yes),
                               visit(exp.no)]);
   }
-  void visitAccessKeyed(syntax.AccessKeyed exp) {
-    ast = new ClosureAST('[]', _operation_bracket,
+  visitAccessKeyed(syntax.AccessKeyed exp) {
+    return new ClosureAST('[]', _operation_bracket,
                              [visit(exp.object), visit(exp.key)]);
   }
-  void visitLiteralPrimitive(syntax.LiteralPrimitive exp) {
-    ast = new ConstantAST(exp.value);
+  visitLiteralPrimitive(syntax.LiteralPrimitive exp) {
+    return new ConstantAST(exp.value);
   }
-  void visitLiteralString(syntax.LiteralString exp) {
-    ast = new ConstantAST(exp.value);
+  visitLiteralString(syntax.LiteralString exp) {
+    return new ConstantAST(exp.value);
   }
-  void visitLiteralArray(syntax.LiteralArray exp) {
+  visitLiteralArray(syntax.LiteralArray exp) {
     List<AST> items = _toAst(exp.elements);
-    ast = new PureFunctionAST('[${items.join(', ')}]', new ArrayFn(), items);
+    return new PureFunctionAST('[${items.join(', ')}]', new ArrayFn(), items);
   }
 
-  void visitLiteralObject(syntax.LiteralObject exp) {
+  visitLiteralObject(syntax.LiteralObject exp) {
     List<String> keys = exp.keys;
     List<AST> values = _toAst(exp.values);
     assert(keys.length == values.length);
@@ -1164,17 +1143,17 @@ class ExpressionVisitor implements syntax.Visitor {
     for (var i = 0; i < keys.length; i++) {
       kv.add('${keys[i]}: ${values[i]}');
     }
-    ast = new PureFunctionAST('{${kv.join(', ')}}', new MapFn(keys), values);
+    return new PureFunctionAST('{${kv.join(', ')}}', new MapFn(keys), values);
   }
 
-  void visitFormatter(syntax.Formatter exp) {
+  visitFormatter(syntax.Formatter exp) {
     if (formatters == null) {
       throw new Exception("No formatters have been registered");
     }
     Function formatterFunction = formatters(exp.name);
     List<AST> args = [visitCollection(exp.expression)];
     args.addAll(_toAst(exp.arguments).map((ast) => new CollectionAST(ast)));
-    ast = new PureFunctionAST('|${exp.name}',
+    return new PureFunctionAST('|${exp.name}',
         new _FormatterWrapper(formatterFunction, args.length), args);
   }
 
