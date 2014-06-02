@@ -300,11 +300,11 @@ class Scope {
     return _Streams.on(this, rootScope._exceptionHandler, name);
   }
 
-  Scope createChild(Object childContext) {
+  Scope createChild(Object childContext, [readWriteExpressions, readOnlyExpressions]) {
     assert(isAttached);
     var child = new Scope(childContext, rootScope, this,
-                          _readWriteGroup.newGroup(childContext),
-                          _readOnlyGroup.newGroup(childContext),
+                          _readWriteGroup.newGroup(childContext, readWriteExpressions),
+                          _readOnlyGroup.newGroup(childContext, readOnlyExpressions),
                          '$id:${_childScopeNextId++}',
                          _stats);
 

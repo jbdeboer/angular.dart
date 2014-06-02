@@ -46,7 +46,7 @@ class ShadowDomComponentFactory implements ComponentFactory {
         NgBaseCss baseCss = injector.getByKey(_NG_BASE_CSS_KEY);
         // This is a bit of a hack since we are returning different type then we are.
         var componentFactory = new _ComponentFactory(node,
-            ref.typeKey,
+            ref,
             component,
             injector.getByKey(_NODE_TREE_SANITIZER_KEY),
             injector.getByKey(_WEB_PLATFORM_KEY),
@@ -72,7 +72,7 @@ class ShadowDomComponentFactory implements ComponentFactory {
 class _ComponentFactory implements Function {
 
   final dom.Element element;
-  final Key typeKey;
+  final DirectiveRef ref;
   final Component component;
   final dom.NodeTreeSanitizer treeSanitizer;
   final Expando _expando;
@@ -87,7 +87,7 @@ class _ComponentFactory implements Function {
   Injector shadowInjector;
   var controller;
 
-  _ComponentFactory(this.element, this.typeKey, this.component, this.treeSanitizer,
+  _ComponentFactory(this.element, this.ref, this.component, this.treeSanitizer,
                     this.platform, this.componentCssRewriter, this._expando,
                     this._baseCss, this._styleElementCache);
 
@@ -98,7 +98,7 @@ class _ComponentFactory implements Function {
       ..applyAuthorStyles = component.applyAuthorStyles
       ..resetStyleInheritance = component.resetStyleInheritance;
 
-    shadowScope = scope.createChild({}); // Isolate
+    shadowScope = scope.createChild({}, ref.readWriteExpressions, ref.readOnlyExpressions); // Isolate
     // TODO(pavelgj): fetching CSS with Http is mainly an attempt to
     // work around an unfiled Chrome bug when reloading same CSS breaks
     // styles all over the page. We shouldn't be doing browsers work,
@@ -166,7 +166,7 @@ class _ComponentFactory implements Function {
           }
           return shadowDom;
         }));
-    controller = createShadowInjector(injector, templateLoader).getByKey(typeKey);
+    controller = createShadowInjector(injector, templateLoader).getByKey(ref.typeKey);
     ComponentFactory._setupOnShadowDomAttach(controller, templateLoader, shadowScope);
     return controller;
   }

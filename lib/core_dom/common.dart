@@ -14,6 +14,13 @@ class MappingParts {
   const MappingParts(this.attrName, this.attrValueAST, this.mode, this.dstAST, this.originalValue);
 }
 
+class WatchGroupPrework {
+  final AST expression;
+  final List<ReactionFn> reactions;
+
+  const WatchGroupPrework(this.expression, this.reactions);
+}
+
 class DirectiveRef {
   final dom.Node element;
   final Type type;
@@ -22,8 +29,11 @@ class DirectiveRef {
   final String value;
   final AST valueAST;
   final mappings = new List<MappingParts>();
+  final WatchGroupPrework readWriteExpressions;
+  final WatchGroupPrework readOnlyExpressions;
 
-  DirectiveRef(this.element, this.type, this.annotation, this.typeKey, [ this.value, this.valueAST ]);
+  DirectiveRef(this.element, this.type, this.annotation, this.typeKey,
+      [ this.value, this.valueAST, this.readWriteExpressions, this.readOnlyExpressions ]);
 
   String toString() {
     var html = element is dom.Element

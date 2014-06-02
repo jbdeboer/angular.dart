@@ -1,6 +1,7 @@
 library angular.watch_group;
 
 import 'package:angular/change_detection/change_detection.dart';
+import 'package:angular/core_dom/module_internal.dart';
 
 part 'linked_list.dart';
 part 'ast.dart';
@@ -114,6 +115,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
     _marker.watchGrp = this;
     _evalWatchTail = _evalWatchHead = _marker;
   }
+
 
   WatchGroup._root(this._changeDetector, this.context)
       : id = '',
@@ -282,14 +284,15 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
    * against the new [context]. If not present than child expressions will
    * evaluate on same context allowing the reuse of the expression cache.
    */
-  WatchGroup newGroup([Object context]) {
+  WatchGroup newGroup([Object context, List<WatchGroupPrework> expressions]) {
     _EvalWatchRecord prev = _childWatchGroupTail._evalWatchTail;
     _EvalWatchRecord next = prev._nextEvalWatch;
+    var cache = <String, WatchRecord<_Handler>>{};
     var childGroup = new WatchGroup._child(
         this,
         _changeDetector.newGroup(),
         context == null ? this.context : context,
-        <String, WatchRecord<_Handler>>{},
+        cache,
         _rootGroup == null ? this : _rootGroup);
     _WatchGroupList._add(this, childGroup);
     var marker = childGroup._marker;
@@ -298,6 +301,16 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
     marker._nextEvalWatch = next;
     prev._nextEvalWatch = marker;
     if (next != null) next._prevEvalWatch = marker;
+
+    // Add any prework to the cache.
+    for (var i = 0; i < expressions.length; i++) {
+      var pre = expressions[i];
+      WatchRecord watch;
+      cache[pre.expression.expression] = watch = pre.expression.setupWatch(childGroup);
+      for (var j = 0; j < pre.reactions.length; j++) {
+        watch.handler.addReactionFn(pre.reactions[j]);
+      }
+    }
 
     return childGroup;
   }
@@ -359,6 +372,9 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
     return lines.join('\n');
   }
 }
+
+
+
 
 /**
  * [RootWatchGroup]
