@@ -424,7 +424,7 @@ class RootWatchGroup extends WatchGroup {
         if (evalStopwatch != null) evalCount++;
         if (evalRecord.check() && changeLog != null) {
           changeLog(evalRecord.handler.expression,
-                    evalRecord.currentValue,
+                    evalRecord.isContext ? evalRecord.watchGrp.context : evalRecord.currentValue,
                     evalRecord.previousValue);
         }
       } catch (e, s) {
@@ -618,6 +618,15 @@ class _ConstantHandler extends _Handler {
   release() => null;
 }
 
+class _ContextHandler extends _Handler {
+  _ContextHandler(WatchGroup watchGroup, String expression)
+      : super(watchGroup, expression)
+  {
+    watchRecord = new _EvalWatchRecord.context(this, watchGroup);
+  }
+  release() => null;
+}
+
 class _FieldHandler extends _Handler {
   _FieldHandler(watchGrp, expression): super(watchGrp, expression);
 
@@ -730,10 +739,12 @@ class _EvalWatchRecord implements WatchRecord<_Handler> {
   final List args;
   final Map<Symbol, dynamic> namedArgs =  new Map<Symbol, dynamic>();
   final String name;
+  bool isContext = false;
   int mode;
   Function fn;
   FieldGetterFactory _fieldGetterFactory;
   bool dirtyArgs = true;
+
 
   dynamic currentValue, previousValue, _object;
   _EvalWatchRecord _prevEvalWatch, _nextEvalWatch;
@@ -765,6 +776,16 @@ class _EvalWatchRecord implements WatchRecord<_Handler> {
         _fieldGetterFactory = null,
         handler = handler,
         currentValue = constantValue,
+        watchGrp = null,
+        args = null,
+        fn = null,
+        name = null;
+
+  _EvalWatchRecord.context(_Handler handler, WatchGroup group)
+      : mode = _MODE_MARKER_,
+        _fieldGetterFactory = null,
+        handler = handler,
+        isContext = true,
         watchGrp = null,
         args = null,
         fn = null,
@@ -844,7 +865,7 @@ class _EvalWatchRecord implements WatchRecord<_Handler> {
         assert(false);
     }
 
-    var current = currentValue;
+    var current = isContext ? watchGrp.context : currentValue;
     if (!identical(current, value)) {
       if (value is String && current is String && value == current) {
         // it is really the same, recover and save so next time identity is same
@@ -869,6 +890,7 @@ class _EvalWatchRecord implements WatchRecord<_Handler> {
   }
 
   String toString() {
+    if (isContext) return 'MARKER[context]';
     if (mode == _MODE_MARKER_) return 'MARKER[$currentValue]';
     return '${watchGrp.id}:${handler.expression}';
   }

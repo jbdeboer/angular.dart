@@ -29,7 +29,7 @@ abstract class AST {
 class ContextReferenceAST extends AST {
   ContextReferenceAST(): super(AST._CONTEXT);
   WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) =>
-      new _ConstantWatchRecord(watchGroup, expression, watchGroup.context);
+      new _ContextWatchRecord(watchGroup, expression);
 }
 
 /**
@@ -166,3 +166,24 @@ class _ConstantWatchRecord extends WatchRecord<_Handler> {
   get nextChange => null;
 }
 
+/**
+ * A WatchRecord which provides access to a late-bound context
+ */
+class _ContextWatchRecord extends WatchRecord<_Handler> {
+  final WatchGroup _watchGroup;
+  get currentValue => _watchGroup.context;
+  final _Handler handler;
+
+  _ContextWatchRecord(WatchGroup watchGroup, String expression)
+     : handler = new _ContextHandler(watchGroup, expression),
+       _watchGroup = watchGroup;
+
+  bool check() => false;
+  void remove() => null;
+
+  get field => null;
+  get previousValue => null;
+  get object => null;
+  set object(_) => null;
+  get nextChange => null;
+}
