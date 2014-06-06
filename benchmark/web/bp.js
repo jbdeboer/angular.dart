@@ -38,6 +38,8 @@ window.addEventListener('DOMContentLoaded', function() {
   
   container.appendChild(btn);
 
+  // Loop 25 times.
+  var loops = 0;
   function loopBenchmark() {
     if (running) {
       btn.innerText = "Loop";
@@ -47,6 +49,9 @@ window.addEventListener('DOMContentLoaded', function() {
         btn.innerText = "Pause";
         running = true;
         var loopB = function() {
+          if (loops++ > 25) {
+		running = false;
+	  }
           if (running) {
             window.requestAnimationFrame(function() {
               if (running) runBenchmarkSteps(loopB);
@@ -110,7 +115,7 @@ window.addEventListener('DOMContentLoaded', function() {
 
   var timesPerAction = {};
    
-  var NUM_SAMPLES = 10;
+  var NUM_SAMPLES = 20;
   function calcStats(times) {
     var iH = '';
     window.benchmarkSteps.forEach(function(bs) {
