@@ -871,11 +871,11 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
   Iterable _iterable;
   int _length;
 
-  /// Keeps track of moved items.
-  DuplicateMap _movedItems = new DuplicateMap();
+  /// Keeps track of the used records at any point in time (during & across `_check()` calls)
+  DuplicateMap _linkedRecords = new DuplicateMap();
 
-  /// Keeps track of removed items.
-  DuplicateMap _removedItems = new DuplicateMap();
+  /// Keeps track of the removed records at any point in time during `_check()` calls.
+  DuplicateMap _unlinkedRecords = new DuplicateMap();
 
   ItemRecord<V> _previousItHead;
   ItemRecord<V> _itHead, _itTail;
@@ -886,7 +886,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
   void _revertToPreviousState() {
     if (!isDirty) return;
 
-    _movedItems.clear();
+    _linkedRecords.clear();
     ItemRecord<V> prev;
     int i = 0;
 
@@ -896,7 +896,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
       record.currentIndex = record.previousIndex = i;
       record._prev = prev;
       if (prev != null) prev._next = prev._nextPrevious = record;
-      _movedItems.put(record);
+      _linkedRecords.put(record);
     }
 
     prev._next = null;
@@ -1061,13 +1061,13 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
     }
 
     // Attempt to see if we have seen the item before.
-    record = _movedItems.get(item, index);
+    record = _linkedRecords.get(item, index);
     if (record != null) {
       // We have seen this before, we need to move it forward in the collection.
       _moveAfter(record, previousRecord, index);
     } else {
       // Never seen it, check evicted list.
-      record = _removedItems.get(item);
+      record = _unlinkedRecords.get(item);
       if (record != null) {
         // It is an item which we have evicted earlier: reinsert it back into the list.
         _reinsertAfter(record, previousRecord, index);
@@ -1106,7 +1106,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
    * of 'b' rather then switch 'a' with 'b' and then add 'a' at the end.
    */
   ItemRecord<V> verifyReinsertion(ItemRecord record, item, int index) {
-    ItemRecord<V> reinsertRecord = _removedItems.get(item);
+    ItemRecord<V> reinsertRecord = _unlinkedRecords.get(item);
     if (reinsertRecord != null) {
       record = _reinsertAfter(reinsertRecord, record._prev, index);
     } else if (record.currentIndex != index) {
@@ -1128,7 +1128,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
       _addToRemovals(_unlink(record));
       record = nextRecord;
     }
-    _removedItems.clear();
+    _unlinkedRecords.clear();
 
     if (_additionsTail != null) _additionsTail._nextAdded = null;
     if (_movesTail != null) _movesTail._nextMoved = null;
@@ -1137,7 +1137,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
   }
 
   ItemRecord<V> _reinsertAfter(ItemRecord<V> record, ItemRecord<V> prevRecord, int index) {
-    _removedItems.remove(record);
+    _unlinkedRecords.remove(record);
     var prev = record._prevRemoved;
     var next = record._nextRemoved;
 
@@ -1199,7 +1199,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
       prevRecord._next = record;
     }
 
-    _movedItems.put(record);
+    _linkedRecords.put(record);
     record.currentIndex = index;
     return record;
   }
@@ -1207,7 +1207,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
   ItemRecord<V> _remove(ItemRecord record) => _addToRemovals(_unlink(record));
 
   ItemRecord<V> _unlink(ItemRecord record) {
-    _movedItems.remove(record);
+    _linkedRecords.remove(record);
 
     var prev = record._prev;
     var next = record._next;
@@ -1246,7 +1246,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
   }
 
   ItemRecord<V> _addToRemovals(ItemRecord<V> record) {
-    _removedItems.put(record);
+    _unlinkedRecords.put(record);
     record.currentIndex = null;
     record._nextRemoved = null;
 
