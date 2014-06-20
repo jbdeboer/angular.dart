@@ -23,6 +23,8 @@ export "package:angular/change_detection/change_detection.dart" show
     FieldGetterFactory;
 
 export "package:angular/core_dom/module_internal.dart" show
+    printComponentTimings,
+    resetComponentTimings,
     Animation,
     AnimationResult,
     BrowserCookies,

@@ -1,5 +1,31 @@
 part of angular.core.dom_internal;
 
+class ComponentTiming {
+  Stopwatch watch = new Stopwatch();
+  String name;
+  int count = 0;
+  ComponentTiming(this.name);
+}
+
+List COMPONENT_TIMINGS = new List(1000); // bigger than needed
+
+printComponentTimings() {
+  var toPrint = ["NAME,TOTAL TIME (us),COUNT"];
+  COMPONENT_TIMINGS.forEach((ComponentTiming t) {
+    if (t == null) return;
+    toPrint.add("${t.name},${t.watch.elapsedMicroseconds},${t.count}");
+  });
+  print(toPrint.join("\n"));
+}
+
+resetComponentTimings() {
+  COMPONENT_TIMINGS.forEach((t) {
+    if (t == null) return;
+    t.watch = new Stopwatch();
+    t.count = 0;
+  });
+}
+
 class TemplateElementBinder extends ElementBinder {
   final DirectiveRef template;
   ViewFactory templateViewFactory;
@@ -207,6 +233,12 @@ class ElementBinder {
 
   void _link(nodeInjector, probe, scope, nodeAttrs) {
     _usableDirectiveRefs.forEach((DirectiveRef ref) {
+      ComponentTiming timing = COMPONENT_TIMINGS[ref.typeKey.id];
+      if (timing == null) {
+        timing = COMPONENT_TIMINGS[ref.typeKey.id] = new ComponentTiming("${ref.type}");
+      }
+      timing.watch.start();
+      timing.count++;
       var directive = nodeInjector.getByKey(ref.typeKey);
       if (probe != null) {
         probe.directives.add(directive);
@@ -230,8 +262,10 @@ class ElementBinder {
         Watch watch;
         watch = scope.watch('1', // Cheat a bit.
             (_, __) {
+          timing.watch.start();
           watch.remove();
           tasks.completeTask(taskId);
+          timing.watch.stop();
         });
       }
 
@@ -240,6 +274,7 @@ class ElementBinder {
       if (directive is DetachAware) {
         scope.on(ScopeEvent.DESTROY).listen((_) => directive.detach());
       }
+      timing.watch.stop();
     });
   }
 
