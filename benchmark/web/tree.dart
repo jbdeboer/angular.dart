@@ -302,6 +302,7 @@ main() {
     ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '*'] :
     ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', '-'];
     scope.context['initData'] = buildTree(maxDepth, values, 0);
+    printComponentTimings();
   });
 
   js.context['benchmarkSteps'].add(new js.JsObject.jsify({
