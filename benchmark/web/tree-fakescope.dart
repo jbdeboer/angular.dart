@@ -1,4 +1,5 @@
 import 'package:di/di.dart';
+import 'package:di/di_dynamic.dart';
 import 'package:angular/angular.dart';
 import 'package:angular/core_dom/module_internal.dart';
 import 'package:angular/application_factory.dart';
@@ -279,12 +280,14 @@ class FakeScope implements Scope {
   var onDestory;
 
   FakeScope(this.rootScope, VmTurnZone zone) {
+    if (rootScope == null) rootScope = this as RootScope;
+
     zone.onTurnDone = rootScope.apply;
     zone.onScheduleMicrotask = rootScope.runAsync;
     context = new FakeContext(this);
   }
 
-  FakeScope._child(this.context, this.rootScope, this._initData, this.onDestory);
+  FakeScope._child(this.context, this.rootScope, this.onDestory);
 
   var context;
   var isAttached = true;
@@ -297,10 +300,10 @@ class FakeScope implements Scope {
   }
   var useDefaultRF = [];
 
-  var _initData;
+  get _initData => rootScope.initDataD;
 
   void set initData(x) {
-    _initData = x;
+    rootScope.initDataD = x;
     rootScope.initDataRF.forEach((f) => f(x, null));
 
     //children.forEach((c) => c.gotData());
@@ -315,11 +318,10 @@ class FakeScope implements Scope {
   var hasData = false;
 
   dataFn(fn) {
+    onData.add(fn);
     if (_data != null) {
       fn(_data);
-      onData.add(fn);
     } else {
-      onData.add(fn);
       gotData();
     }
   }
@@ -364,13 +366,10 @@ class FakeScope implements Scope {
     }
 
     if (name == "initData") {
-      if (_initData == null) {
-        rootScope.initDataRF.add(reactionFn);
-      } else {
+      if (_initData != null) {
         reactionFn(_initData, null);
-        rootScope.initDataRF.add(reactionFn);
       }
-      //initData = _initData;
+      rootScope.initDataRF.add(reactionFn);
       return null;
     }
 
@@ -420,7 +419,7 @@ class FakeScope implements Scope {
   Scope createChild(Object childContext) {
 
     var cPos = children.length;
-    var c = new FakeScope._child(childContext, rootScope, _initData, () { children[cPos] = null; });
+    var c = new FakeScope._child(childContext, rootScope, () { children[cPos] = null; });
     children.add(c);
     c.gotData();
     return c;
@@ -436,8 +435,12 @@ class FakeWatch implements Watch {
   remove() {}
 }
 @Injectable()
-class FakeRootScope implements RootScope {
+class FakeRootScope extends FakeScope implements RootScope  {
+
+  FakeRootScope(VmTurnZone zone) : super(null, zone);
+
   var initDataRF = [];
+  var initDataD;
 
 
   var _domWriteFns = [];
@@ -487,6 +490,7 @@ class FakeASTParser implements ASTParser {
 
 // Main function runs the benchmark.
 main() {
+  setupModuleTypeReflector();
   var cleanup, createDom;
 
   var module = new Module()
@@ -498,7 +502,6 @@ main() {
       ..type(Scope, implementedBy: FakeScope)
       ..type(RootScope, implementedBy: FakeRootScope)
       ..type(ASTParser, implementedBy: FakeASTParser)
-      ..factory(ScopeDigestTTL, (i) => new ScopeDigestTTL.value(15))
       ..bind(CompilerConfig, toValue: new CompilerConfig.withOptions(elementProbeEnabled: false));
 
   var injector = applicationFactory().addModule(module).run();
@@ -514,7 +517,7 @@ main() {
   treeAST = parser('tree');
 
   VmTurnZone zone = injector.get(VmTurnZone);
-  Scope scope = injector.get(Scope);
+  Scope scope = injector.get(RootScope);
 
   scope.context['initData'] = {
       "value": "top",
