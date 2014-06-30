@@ -10,6 +10,7 @@ export 'package:angular/core/parser/eval_calls.dart';
 class Chain extends syntax.Chain {
   Chain(List<syntax.Expression> expressions) : super(expressions);
   eval(scope, [FormatterMap formatters]) {
+    print("chain eval");
     var result;
     for (int i = 0; i < expressions.length; i++) {
       var last = expressions[i].eval(scope, formatters);

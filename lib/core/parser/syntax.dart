@@ -54,12 +54,15 @@ class BoundExpression {
   final Expression expression;
   final _context;
   final LocalsWrapper _wrapper;
-  BoundExpression(this.expression, this._context, this._wrapper);
+  BoundExpression(this.expression, this._context, this._wrapper) {
+   // throw "boo $expression";
+  }
 
   call([locals]) => expression.eval(_computeContext(locals));
   assign(value, [locals]) => expression.assign(_computeContext(locals), value);
 
   _computeContext(locals) {
+    print("cc $locals $_context");
     if (locals == null) return _context;
     if (_wrapper != null) return _wrapper(_context, locals);
     throw new StateError("Locals $locals provided, but missing wrapper.");

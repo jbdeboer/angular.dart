@@ -44,6 +44,7 @@ abstract class AccessFast {
   Setter get setter;
 
   _eval(holder) {
+    print("_eval $holder");
     if (holder == null) return null;
     return (holder is Map) ? holder[name] : getter(holder);
   }

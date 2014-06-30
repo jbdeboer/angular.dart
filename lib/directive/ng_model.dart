@@ -159,6 +159,7 @@ class NgModel extends NgControl implements AttachAware {
   // TODO(misko): getters/setters need to go. We need AST here.
   @NgCallback('ng-model')
   void set model(BoundExpression boundExpression) {
+    print("be: ${boundExpression.expression}");
     setter = boundExpression.assign;
     _scope.rootScope.runAsync(() {
       _modelValue = boundExpression();
