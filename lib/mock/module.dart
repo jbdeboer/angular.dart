@@ -21,6 +21,7 @@ import 'dart:js' as js;
 import 'package:angular/angular.dart';
 import 'package:angular/core/module_internal.dart';
 import 'package:angular/core_dom/module_internal.dart';
+import 'package:angular/core_dom/directive_injector.dart';
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/mock/static_keys.dart';
 import 'package:di/di.dart';
