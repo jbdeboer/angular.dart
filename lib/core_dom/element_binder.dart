@@ -4,26 +4,22 @@ var _ElementBinder_directive = traceCreateScope('ElementBinder#createDirective(a
 var _ElementBinder_setupBindings = traceCreateScope('ElementBinder#setupBindings(ascii name)');
 
 class TemplateElementBinder extends ElementBinder {
-  final DirectiveRef template;
   ViewFactory templateViewFactory;
 
+  final DirectiveRef template;
   final bool hasTemplate = true;
 
   final ElementBinder templateBinder;
 
-  var _directiveCache;
-  List<DirectiveRef> get _usableDirectiveRefs {
-    if (_directiveCache != null) return _directiveCache;
-    return _directiveCache = [template];
-  }
-
   TemplateElementBinder(perf, expando, parser, config,
-                        this.template, this.templateBinder,
+                        template, this.templateBinder,
                         onEvents, bindAttrs, childMode)
-      : super(perf, expando, parser, config,
-          null, null, onEvents, bindAttrs, childMode);
+      : template = template, super(perf, expando, parser, config,
+          null, [template], onEvents, bindAttrs, childMode) {
 
-  String toString() => "[TemplateElementBinder template:$template]";
+      }
+
+  String toString() => "[TemplateElementBinder template:${decorators[0]}]";
 }
 
 /**
@@ -50,23 +46,33 @@ class ElementBinder {
 
   ElementBinder(this._perf, this._expando, this._parser, this._config,
                 this.componentData, this.decorators,
-                this.onEvents, this.bindAttrs, this.childMode);
+                this.onEvents, this.bindAttrs, this.childMode) {
+    if (componentData != null) {
+      _usableDirectiveRefs = new List.from(decorators)..add(componentData.ref);
+      if (_usableDirectiveRefs == null) throw "x";
+    } else {
+      _usableDirectiveRefs = decorators;
+      if (_usableDirectiveRefs == null) throw "y";
+    }
+
+    hasDirectivesOrEvents = 
+      _usableDirectiveRefs.isNotEmpty || onEvents.isNotEmpty || bindAttrs.isNotEmpty;
+    _elementProbeEnabled = _config.elementProbeEnabled;
+    _hasPropsOrEvents = bindAttrs.isNotEmpty || onEvents.isNotEmpty;
+    
+  }
 
   final bool hasTemplate = false;
 
   bool get shouldCompileChildren =>
       childMode == Directive.COMPILE_CHILDREN;
 
-  var _directiveCache;
-  List<DirectiveRef> get _usableDirectiveRefs {
-    if (_directiveCache != null) return _directiveCache;
-    if (componentData != null) return _directiveCache = new List.from(decorators)..add(componentData.ref);
-    return _directiveCache = decorators;
-  }
+  List<DirectiveRef> _usableDirectiveRefs;
 
-  bool get hasDirectivesOrEvents =>
-      _usableDirectiveRefs.isNotEmpty || onEvents.isNotEmpty || bindAttrs.isNotEmpty;
-
+  bool hasDirectivesOrEvents;
+  bool _elementProbeEnabled;
+  bool _hasPropsOrEvents;
+     
   void _bindTwoWay(tasks, AST ast, scope, directiveScope,
                    controller, AST dstAST) {
     var taskId = (tasks != null) ? tasks.registerTask() : 0;
@@ -261,10 +267,12 @@ class ElementBinder {
   DirectiveInjector bind(View view, Scope scope,
                          DirectiveInjector parentInjector,
                          dom.Node node, EventHandler eventHandler, Animate animate) {
+    if (!hasDirectivesOrEvents) return parentInjector;
+
+    // TODO: Avoid this 'is' call if possible.
     var nodeAttrs = node is dom.Element ? new NodeAttrs(node) : null;
 
     var directiveRefs = _usableDirectiveRefs;
-    if (!hasDirectivesOrEvents) return parentInjector;
 
     DirectiveInjector nodeInjector;
     if (this is TemplateElementBinder) {
@@ -287,12 +295,12 @@ class ElementBinder {
         DirectiveBinderFn config = ref.annotation.module;
         if (config != null) config(nodeInjector);
       }
-      if (_config.elementProbeEnabled && ref.valueAST != null) {
+      if (_elementProbeEnabled && ref.valueAST != null) {
         nodeInjector.elementProbe.bindingExpressions.add(ref.valueAST.expression);
       }
     }
 
-    if (_config.elementProbeEnabled) {
+    if (_elementProbeEnabled) {
       _expando[node] = nodeInjector.elementProbe;
       // TODO(misko): pretty sure that clearing Expando is not necessary. Remove?
       scope.on(ScopeEvent.DESTROY).listen((_) => _expando[node] = null);
@@ -300,6 +308,12 @@ class ElementBinder {
 
     _link(nodeInjector, scope, nodeAttrs);
 
+    if (_hasPropsOrEvents) _bindPropsAndEvents(bindAttrs, onEvents, node, scope, view);
+
+    return nodeInjector;
+  }
+
+  _bindPropsAndEvents(bindAttrs, onEvents, node, scope, view) {  
     var jsNode;
     List bindAssignableProps = [];
     bindAttrs.forEach((String prop, AST ast) {
@@ -326,7 +340,6 @@ class ElementBinder {
         view.registerEvent(EventHandler.attrNameToEventName(event));
       });
     }
-    return nodeInjector;
   }
 
   String toString() => "[ElementBinder decorators:$decorators]";
