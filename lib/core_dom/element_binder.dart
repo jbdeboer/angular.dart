@@ -248,20 +248,7 @@ class ElementBinder {
 
   void _createDirectiveFactories(DirectiveRef ref, DirectiveInjector nodeInjector, node,
                                  nodeAttrs) {
-    if (ref.typeKey == TEXT_MUSTACHE_KEY) {
-      new TextMustache(node, ref.valueAST, nodeInjector.scope);
-    } else if (ref.typeKey == ATTR_MUSTACHE_KEY) {
-      new AttrMustache(nodeAttrs, ref.value, ref.valueAST, nodeInjector.scope);
-    } else if (ref.annotation is Component) {
-      assert(ref == componentData.ref);
-
-      BoundComponentFactory boundComponentFactory = componentData.factory;
-      Function componentFactory = boundComponentFactory.call(node);
-      nodeInjector.bindByKey(ref.typeKey, componentFactory,
-          boundComponentFactory.callArgs, ref.annotation.visibility);
-    } else {
-      nodeInjector.bindByKey(ref.typeKey, ref.factory, ref.paramKeys, ref.annotation.visibility);
-    }
+   
   }
 
   DirectiveInjector bind(View view, Scope scope,
@@ -287,12 +274,28 @@ class ElementBinder {
     for(var i = 0; i < directiveRefs.length; i++) {
       DirectiveRef ref = directiveRefs[i];
       Directive annotation = ref.annotation;
-      if (ref.annotation is Controller) {
+      Key typeKey = ref.typeKey;
+      if (annotation is Controller) {
         scope = nodeInjector.scope = scope.createChild(new PrototypeMap(scope.context));
       }
-      _createDirectiveFactories(ref, nodeInjector, node, nodeAttrs);
-      if (ref.annotation.module != null) {
-        DirectiveBinderFn config = ref.annotation.module;
+
+      if (typeKey == TEXT_MUSTACHE_KEY) {
+        new TextMustache(node, ref.valueAST, nodeInjector.scope);
+      } else if (typeKey == ATTR_MUSTACHE_KEY) {
+        new AttrMustache(nodeAttrs, ref.value, ref.valueAST, nodeInjector.scope);
+      } else if (annotation is Component) {
+        assert(ref == componentData.ref);
+
+        BoundComponentFactory boundComponentFactory = componentData.factory;
+        Function componentFactory = boundComponentFactory.call(node);
+        nodeInjector.bindByKey(typeKey, componentFactory,
+            boundComponentFactory.callArgs, annotation.visibility);
+      } else {
+        nodeInjector.bindByKey(typeKey, ref.factory, ref.paramKeys, annotation.visibility);
+      }
+
+      if (annotation.module != null) {
+        DirectiveBinderFn config = annotation.module;
         if (config != null) config(nodeInjector);
       }
       if (_elementProbeEnabled && ref.valueAST != null) {
