@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Travis Model</title>
+    <title>Travis Builds</title>
 </head>
 <body>
+<h1>Travis Builds</h1>
+<p>
+This shows Travis jobs bucketed by the hour they were started and computes the number of machine-minutes added to the queue during each hour.
+</p>
 
 <travis-count></travis-count>
-
-<div ng-repeat="m in minutes">{{m.label}}</div>
 
 <script type="application/dart" src="index.dart"></script>
 <script src="packages/browser/dart.js"></script>
